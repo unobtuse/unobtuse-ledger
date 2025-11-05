@@ -41,7 +41,7 @@
 <body class="antialiased">
 
     <!-- Navigation -->
-    <nav class="fixed top-0 w-full backdrop-blur-md z-50" style="background-color: var(--color-background); opacity: 0.95; border-bottom: 1px solid var(--color-border);">
+    <nav class="fixed top-0 w-full backdrop-blur-md z-50 border-b" style="background-color: var(--color-background); border-color: var(--color-border);">
         <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
@@ -87,7 +87,7 @@
     </nav>
 
     <!-- Hero Section -->
-    <section class="pt-32 pb-20 px-4 sm:px-6 lg:px-8" style="background: linear-gradient(135deg, var(--color-background) 0%, var(--color-muted) 100%);">
+    <section class="relative pt-32 pb-20 px-4 sm:px-6 lg:px-8" style="background: linear-gradient(135deg, var(--color-background) 0%, var(--color-muted) 100%);">
         <div class="max-w-7xl mx-auto">
             <div class="grid lg:grid-cols-2 gap-12 items-center">
                 <!-- Left: Hero Copy -->
