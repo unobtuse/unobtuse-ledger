@@ -47,7 +47,7 @@
         <main class="py-10">
             <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
                 <!-- Welcome Card -->
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg mb-6">
                     <div class="p-6 bg-white border-b border-gray-200">
                         <h2 class="text-2xl font-bold text-gray-900 mb-4">
                             Welcome to Unobtuse Ledger! 🎉
@@ -73,27 +73,74 @@
                         @endif
 
                         <div class="mt-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Phase 1A Complete ✅</h3>
+                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Phase 1B Complete ✅</h3>
                             <ul class="space-y-2 text-sm text-gray-600">
-                                <li>✓ Laravel 12 configured with UUID primary keys</li>
-                                <li>✓ Google OAuth authentication</li>
-                                <li>✓ Email/password registration</li>
-                                <li>✓ Two-factor authentication (TOTP) support</li>
-                                <li>✓ Email verification</li>
-                                <li>✓ Password reset flows</li>
-                                <li>✓ Modern, responsive authentication UI</li>
+                                <li>✓ Plaid integration configured</li>
+                                <li>✓ Account linking ready</li>
+                                <li>✓ Transaction sync background jobs</li>
+                                <li>✓ Bill detection algorithm</li>
+                                <li>✓ Database schema complete</li>
+                                <li>✓ Webhook handler implemented</li>
                             </ul>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Linked Accounts -->
+                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                    <div class="p-6">
+                        <div class="flex justify-between items-center mb-6">
+                            <h3 class="text-xl font-bold text-gray-900">Linked Accounts</h3>
+                            <a href="{{ route('accounts.index') }}" 
+                               class="inline-flex items-center px-4 py-2 bg-blue-600 border border-transparent rounded-md font-semibold text-xs text-white uppercase tracking-widest hover:bg-blue-700 active:bg-blue-900 focus:outline-none focus:border-blue-900 focus:ring ring-blue-300 disabled:opacity-25 transition ease-in-out duration-150">
+                                + Link Bank Account
+                            </a>
                         </div>
 
-                        <div class="mt-6">
-                            <h3 class="text-lg font-semibold text-gray-900 mb-3">Coming Next: Phase 1B</h3>
-                            <ul class="space-y-2 text-sm text-gray-600">
-                                <li>→ Plaid integration for bank account linking</li>
-                                <li>→ Transaction synchronization</li>
-                                <li>→ Bill detection and tracking</li>
-                                <li>→ Budget calculations</li>
-                            </ul>
-                        </div>
+                        @if (auth()->user()->accounts->isEmpty())
+                            <div class="text-center py-12">
+                                <svg class="mx-auto h-12 w-12 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M7 15h1m4 0h1m-7 4h12a3 3 0 003-3V8a3 3 0 00-3-3H6a3 3 0 00-3 3v8a3 3 0 003 3z" />
+                                </svg>
+                                <h3 class="mt-2 text-sm font-medium text-gray-900">No accounts linked</h3>
+                                <p class="mt-1 text-sm text-gray-500">Get started by linking your first bank account.</p>
+                            </div>
+                        @else
+                            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                                @foreach (auth()->user()->accounts as $account)
+                                    <div class="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                                        <div class="flex items-center justify-between mb-2">
+                                            <h4 class="font-semibold text-gray-900">{{ $account->account_name }}</h4>
+                                            @if ($account->sync_status === 'synced')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                                    Synced
+                                                </span>
+                                            @elseif ($account->sync_status === 'syncing')
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-yellow-100 text-yellow-800">
+                                                    Syncing...
+                                                </span>
+                                            @else
+                                                <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                                    Error
+                                                </span>
+                                            @endif
+                                        </div>
+                                        <p class="text-sm text-gray-600 mb-1">{{ $account->institution_name }}</p>
+                                        <p class="text-sm text-gray-500 mb-3">
+                                            {{ ucfirst($account->account_type) }} •••• {{ $account->mask }}
+                                        </p>
+                                        <div class="text-2xl font-bold text-gray-900">
+                                            {{ $account->getFormattedBalance() }}
+                                        </div>
+                                        @if ($account->last_synced_at)
+                                            <p class="text-xs text-gray-500 mt-2">
+                                                Last synced {{ $account->last_synced_at->diffForHumans() }}
+                                            </p>
+                                        @endif
+                                    </div>
+                                @endforeach
+                            </div>
+                        @endif
                     </div>
                 </div>
             </div>

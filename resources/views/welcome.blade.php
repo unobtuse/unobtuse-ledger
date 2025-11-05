@@ -152,7 +152,7 @@
                             <div class="space-y-3">
                                 <div class="flex items-center justify-between p-4 style="background-color: var(--color-muted); border-color: var(--color-chart-5);" rounded-lg border ">
                                     <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 bg-red-500 rounded-full flex items-center justify-center text-white font-bold">!</div>
+                                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold" style="background-color: var(--color-chart-5); color: white;">!</div>
                                         <div>
                                             <p class="font-medium">Credit Card Payment</p>
                                             <p class="text-sm style="color: var(--color-muted-foreground);"">Due Nov 8</p>
@@ -163,7 +163,7 @@
 
                                 <div class="flex items-center justify-between p-4 style="background-color: var(--color-muted); border-color: var(--color-chart-4);" rounded-lg border ">
                                     <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 bg-yellow-500 rounded-full flex items-center justify-center text-white font-bold">⚡</div>
+                                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold" style="background-color: var(--color-chart-4); color: white;">⚡</div>
                                         <div>
                                             <p class="font-medium">Electric Bill</p>
                                             <p class="text-sm style="color: var(--color-muted-foreground);"">Due Nov 10</p>
@@ -174,7 +174,7 @@
 
                                 <div class="flex items-center justify-between p-4 style="background-color: var(--color-muted); border-color: var(--color-chart-2);" rounded-lg border ">
                                     <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 bg-green-500 rounded-full flex items-center justify-center text-white font-bold">✓</div>
+                                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold" style="background-color: var(--color-chart-2); color: white;">✓</div>
                                         <div>
                                             <p class="font-medium">Internet</p>
                                             <p class="text-sm style="color: var(--color-muted-foreground);"">Paid</p>
@@ -189,7 +189,7 @@
                                     <span class="style="color: var(--color-muted-foreground);"">Remaining Budget:</span>
                                     <span class="text-2xl font-bold text-chart-2">$1,230</span>
                                 </div>
-                                <div class="text-sm text-gray-500 text-center">After bills, before next paycheck</div>
+                                <div class="text-sm text-center" style="color: var(--color-muted-foreground);">After bills, before next paycheck</div>
                             </div>
                         </div>
                     </div>
@@ -267,7 +267,7 @@
                     <p class="style="color: var(--color-muted-foreground);" mb-4">
                         One missed payment drops your credit score 50-100 points. Recovery takes 6-12 months.
                     </p>
-                    <div class="text-2xl font-bold text-orange-600">-80 points</div>
+                    <div class="text-2xl font-bold text-chart-1">-80 points</div>
                 </div>
 
                 <!-- Problem 3 -->
@@ -284,7 +284,7 @@
     </section>
 
     <!-- Solution / How It Works -->
-    <section id="features" class="py-20 px-4 sm:px-6 lg:px-8 bg-gradient-to-br from-blue-50 to-purple-50 dark:from-gray-900 dark:to-gray-800">
+    <section id="features" class="py-20 px-4 sm:px-6 lg:px-8" style="background-color: var(--color-muted);">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
                 <h2 class="text-3xl sm:text-4xl font-bold style="color: var(--color-foreground);" mb-4">
@@ -311,7 +311,7 @@
 
                 <!-- Step 2 -->
                 <div class="text-center">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-purple-600 text-white rounded-full text-2xl font-bold mb-6">2</div>
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full text-2xl font-bold mb-6" style="background-color: var(--color-chart-4); color: white;">2</div>
                     <h3 class="text-2xl font-bold style="color: var(--color-foreground);" mb-4">Set Your Pay Schedule</h3>
                     <p class="style="color: var(--color-muted-foreground);" mb-6">
                         Tell us how often you get paid. We'll align your bills with YOUR paycheck dates—not calendar months.
@@ -330,7 +330,7 @@
 
                 <!-- Step 3 -->
                 <div class="text-center">
-                    <div class="inline-flex items-center justify-center w-16 h-16 bg-green-600 text-white rounded-full text-2xl font-bold mb-6">3</div>
+                    <div class="inline-flex items-center justify-center w-16 h-16 rounded-full text-2xl font-bold mb-6" style="background-color: var(--color-chart-2); color: white;">3</div>
                     <h3 class="text-2xl font-bold style="color: var(--color-foreground);" mb-4">Never Miss a Payment</h3>
                     <p class="style="color: var(--color-muted-foreground);" mb-6">
                         Get smart reminders 3 days before bills are due. AI finds forgotten subscriptions. Save money automatically.
@@ -461,7 +461,7 @@
                         "The bill calendar that shows what's due before my next paycheck is a game changer. Finally, an app that gets how real people budget."
                     </p>
                     <div class="flex items-center space-x-3">
-                        <div class="w-12 h-12 bg-purple-600 rounded-full flex items-center justify-center text-white font-bold">S</div>
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold" style="background-color: var(--color-chart-4); color: white;">S</div>
                         <div>
                             <div class="font-bold style="color: var(--color-foreground);"">Sarah K.</div>
                             <div class="text-sm text-gray-500">Marketing Manager</div>
@@ -480,7 +480,7 @@
                         "Zero late fees in 8 months! My credit score went up 48 points. This app has genuinely changed my financial life."
                     </p>
                     <div class="flex items-center space-x-3">
-                        <div class="w-12 h-12 bg-green-600 rounded-full flex items-center justify-center text-white font-bold">D</div>
+                        <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold" style="background-color: var(--color-chart-2); color: white;">D</div>
                         <div>
                             <div class="font-bold style="color: var(--color-foreground);"">David L.</div>
                             <div class="text-sm text-gray-500">Teacher</div>
