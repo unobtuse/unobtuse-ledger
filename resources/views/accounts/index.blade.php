@@ -186,10 +186,97 @@
     </div>
 
     <script>
-        function linkAccount() {
-            // TODO: Implement Plaid Link initialization
-            // This will be implemented in Phase 1B when Plaid Link is fully integrated
-            alert('Plaid Link integration coming soon! The backend is ready, just need to initialize the Plaid Link UI.');
+        let plaidHandler = null;
+
+        async function linkAccount() {
+            try {
+                // Show loading state
+                const button = event.target;
+                const originalText = button.innerHTML;
+                button.disabled = true;
+                button.innerHTML = 'Loading...';
+
+                // Get link token from backend
+                const response = await fetch('{{ route('accounts.link-token') }}', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                    }
+                });
+
+                const data = await response.json();
+
+                if (!response.ok || data.error) {
+                    throw new Error(data.error || 'Failed to initialize Plaid');
+                }
+
+                // Initialize Plaid Link
+                plaidHandler = Plaid.create({
+                    token: data.link_token,
+                    onSuccess: async function(public_token, metadata) {
+                        console.log('Plaid Link success!', metadata);
+                        
+                        // Exchange public token for access token
+                        try {
+                            const exchangeResponse = await fetch('{{ route('accounts.exchange-token') }}', {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
+                                },
+                                body: JSON.stringify({
+                                    public_token: public_token,
+                                    metadata: metadata
+                                })
+                            });
+
+                            const exchangeData = await exchangeResponse.json();
+
+                            if (!exchangeResponse.ok) {
+                                throw new Error(exchangeData.error || 'Failed to link account');
+                            }
+
+                            // Success! Reload page to show new accounts
+                            window.location.reload();
+                        } catch (error) {
+                            console.error('Token exchange error:', error);
+                            alert('Failed to link account: ' + error.message);
+                            button.disabled = false;
+                            button.innerHTML = originalText;
+                        }
+                    },
+                    onExit: function(err, metadata) {
+                        // User exited the Link flow
+                        if (err != null) {
+                            console.error('Plaid Link error:', err);
+                            alert('An error occurred: ' + err.error_message);
+                        }
+                        button.disabled = false;
+                        button.innerHTML = originalText;
+                    },
+                    onEvent: function(eventName, metadata) {
+                        console.log('Plaid event:', eventName, metadata);
+                    }
+                });
+
+                // Open Plaid Link
+                plaidHandler.open();
+
+                // Re-enable button
+                button.disabled = false;
+                button.innerHTML = originalText;
+
+            } catch (error) {
+                console.error('Plaid Link initialization error:', error);
+                alert('Failed to start account linking: ' + error.message);
+                
+                // Re-enable button
+                if (event && event.target) {
+                    event.target.disabled = false;
+                    event.target.innerHTML = '+ Link New Account';
+                }
+            }
         }
     </script>
 </body>

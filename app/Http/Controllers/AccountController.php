@@ -49,10 +49,14 @@ class AccountController extends Controller
     {
         try {
             $user = auth()->user();
-            $linkToken = $this->plaidService->createLinkToken($user);
+            $linkTokenResponse = $this->plaidService->createLinkToken(
+                (string) $user->id,
+                config('app.name'),
+                $user->email
+            );
 
             return response()->json([
-                'link_token' => $linkToken['link_token'],
+                'link_token' => $linkTokenResponse['link_token'],
             ]);
         } catch (\Exception $e) {
             Log::error('Failed to create Plaid link token', [

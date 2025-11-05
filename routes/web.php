@@ -36,7 +36,7 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Accounts
     Route::prefix('accounts')->name('accounts.')->group(function () {
         Route::get('/', [AccountController::class, 'index'])->name('index');
-        Route::post('/link', [AccountController::class, 'createLinkToken'])->name('link');
-        Route::get('/link/callback', [AccountController::class, 'handlePlaidCallback'])->name('link.callback');
+        Route::post('/link-token', [AccountController::class, 'createLinkToken'])->name('link-token');
+        Route::post('/exchange-token', [AccountController::class, 'exchangePublicToken'])->name('exchange-token');
     });
 });

@@ -78,6 +78,7 @@ class Account extends Model
             'last_synced_at' => 'datetime',
             'is_active' => 'boolean',
             'metadata' => 'array',
+            'plaid_access_token' => 'encrypted',
         ];
     }
 
