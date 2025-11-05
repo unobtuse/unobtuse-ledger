@@ -838,16 +838,48 @@
                 </div>
             </div>
 
-            <div class="border-t border-gray-800 pt-8 flex flex-col md:flex-row justify-between items-center text-sm">
+            <div class="pt-8 flex flex-col md:flex-row justify-between items-center text-sm" style="border-top: 1px solid var(--color-border); color: var(--color-muted-foreground);">
                 <p>© 2025 Unobtuse Ledger. All rights reserved. Built with ❤️ by GabeMade.it</p>
                 <div class="flex space-x-6 mt-4 md:mt-0">
-                    <a href="https://twitter.com/UnobtuseLedger" class="hover:text-white transition" target="_blank" rel="noopener">Twitter</a>
-                    <a href="#" class="hover:text-white transition">Discord</a>
-                    <a href="#" class="hover:text-white transition">GitHub</a>
+                    <a href="https://twitter.com/UnobtuseLedger" class="hover:opacity-80 transition" target="_blank" rel="noopener">Twitter</a>
+                    <a href="#" class="hover:opacity-80 transition">Discord</a>
+                    <a href="#" class="hover:opacity-80 transition">GitHub</a>
                 </div>
             </div>
         </div>
     </footer>
+
+    <!-- Dark Mode Toggle Script -->
+    <script>
+        // Check for saved theme preference or default to 'light'
+        const themeToggleDarkIcon = document.getElementById('theme-toggle-dark-icon');
+        const themeToggleLightIcon = document.getElementById('theme-toggle-light-icon');
+        
+        // Change the icons inside the button based on previous settings
+        if (localStorage.getItem('color-theme') === 'dark' || (!('color-theme' in localStorage) && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+            themeToggleLightIcon.classList.remove('hidden');
+            document.documentElement.classList.add('dark');
+        } else {
+            themeToggleDarkIcon.classList.remove('hidden');
+        }
+        
+        const themeToggleBtn = document.getElementById('theme-toggle');
+        
+        themeToggleBtn.addEventListener('click', function() {
+            // Toggle icons
+            themeToggleDarkIcon.classList.toggle('hidden');
+            themeToggleLightIcon.classList.toggle('hidden');
+            
+            // If currently dark mode
+            if (document.documentElement.classList.contains('dark')) {
+                document.documentElement.classList.remove('dark');
+                localStorage.setItem('color-theme', 'light');
+            } else {
+                document.documentElement.classList.add('dark');
+                localStorage.setItem('color-theme', 'dark');
+            }
+        });
+    </script>
 
     </body>
 </html>
