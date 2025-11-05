@@ -119,4 +119,69 @@ class User extends Authenticatable implements MustVerifyEmail
         $this->preferences = $preferences;
         $this->save();
     }
+
+    /**
+     * Get the user's linked accounts.
+     */
+    public function accounts()
+    {
+        return $this->hasMany(Account::class);
+    }
+
+    /**
+     * Get the user's active accounts.
+     */
+    public function activeAccounts()
+    {
+        return $this->hasMany(Account::class)->where('is_active', true);
+    }
+
+    /**
+     * Get the user's transactions.
+     */
+    public function transactions()
+    {
+        return $this->hasMany(Transaction::class);
+    }
+
+    /**
+     * Get the user's bills.
+     */
+    public function bills()
+    {
+        return $this->hasMany(Bill::class);
+    }
+
+    /**
+     * Get the user's pay schedules.
+     */
+    public function paySchedules()
+    {
+        return $this->hasMany(PaySchedule::class);
+    }
+
+    /**
+     * Get the user's active pay schedule.
+     */
+    public function activePaySchedule()
+    {
+        return $this->hasOne(PaySchedule::class)->where('is_active', true);
+    }
+
+    /**
+     * Get the user's budgets.
+     */
+    public function budgets()
+    {
+        return $this->hasMany(Budget::class);
+    }
+
+    /**
+     * Get the current month's budget.
+     */
+    public function currentBudget()
+    {
+        return $this->hasOne(Budget::class)
+                    ->where('month', now()->format('Y-m'));
+    }
 }
