@@ -55,6 +55,17 @@
                     <a href="#features" class="transition" style="color: var(--color-muted-foreground);">Features</a>
                     <a href="#pricing" class="transition" style="color: var(--color-muted-foreground);">Pricing</a>
                     <a href="#faq" class="transition" style="color: var(--color-muted-foreground);">FAQ</a>
+                    
+                    <!-- Dark Mode Toggle -->
+                    <button id="theme-toggle" type="button" class="p-2 rounded-lg transition" style="color: var(--color-muted-foreground);" title="Toggle dark mode">
+                        <svg id="theme-toggle-dark-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M17.293 13.293A8 8 0 016.707 2.707a8.001 8.001 0 1010.586 10.586z"></path>
+                        </svg>
+                        <svg id="theme-toggle-light-icon" class="hidden w-5 h-5" fill="currentColor" viewBox="0 0 20 20">
+                            <path d="M10 2a1 1 0 011 1v1a1 1 0 11-2 0V3a1 1 0 011-1zm4 8a4 4 0 11-8 0 4 4 0 018 0zm-.464 4.95l.707.707a1 1 0 001.414-1.414l-.707-.707a1 1 0 00-1.414 1.414zm2.12-10.607a1 1 0 010 1.414l-.706.707a1 1 0 11-1.414-1.414l.707-.707a1 1 0 011.414 0zM17 11a1 1 0 100-2h-1a1 1 0 100 2h1zm-7 4a1 1 0 011 1v1a1 1 0 11-2 0v-1a1 1 0 011-1zM5.05 6.464A1 1 0 106.465 5.05l-.708-.707a1 1 0 00-1.414 1.414l.707.707zm1.414 8.486l-.707.707a1 1 0 01-1.414-1.414l.707-.707a1 1 0 011.414 1.414zM4 11a1 1 0 100-2H3a1 1 0 000 2h1z" fill-rule="evenodd" clip-rule="evenodd"></path>
+                        </svg>
+                    </button>
+                    
                     @auth
                         <a href="{{ url('/dashboard') }}" class="btn-primary">Dashboard</a>
                     @else
@@ -779,49 +790,50 @@
     </section>
 
     <!-- Footer -->
-    <footer class="bg-gray-900 style="color: var(--color-muted-foreground);" py-12 px-4 sm:px-6 lg:px-8">
+    <footer class="py-12 px-4 sm:px-6 lg:px-8" style="background-color: var(--color-card); border-top: 1px solid var(--color-border);">
         <div class="max-w-7xl mx-auto">
             <div class="grid md:grid-cols-4 gap-8 mb-8">
                 <!-- Brand -->
                 <div>
                     <div class="mb-4">
-                        <img src="{{ asset('logos/unobtuse-ledger-white-logo.svg') }}" alt="Unobtuse Ledger" class="h-8">
+                        <img src="{{ asset('logos/unobtuse-ledger-black-logo.svg') }}" alt="Unobtuse Ledger" class="h-8 dark:hidden">
+                        <img src="{{ asset('logos/unobtuse-ledger-white-logo.svg') }}" alt="Unobtuse Ledger" class="h-8 hidden dark:block">
                     </div>
-                    <p class="text-sm">
+                    <p class="text-sm" style="color: var(--color-muted-foreground);">
                         AI-powered personal finance management. Never miss a payment, never waste a dollar.
                     </p>
                 </div>
 
                 <!-- Product -->
                 <div>
-                    <h4 class="font-bold text-white mb-4">Product</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#features" class="hover:text-white transition">Features</a></li>
-                        <li><a href="#pricing" class="hover:text-white transition">Pricing</a></li>
-                        <li><a href="#" class="hover:text-white transition">Roadmap</a></li>
-                        <li><a href="#" class="hover:text-white transition">Changelog</a></li>
+                    <h4 class="font-bold mb-4" style="color: var(--color-foreground);">Product</h4>
+                    <ul class="space-y-2 text-sm" style="color: var(--color-muted-foreground);">
+                        <li><a href="#features" class="hover:opacity-80 transition">Features</a></li>
+                        <li><a href="#pricing" class="hover:opacity-80 transition">Pricing</a></li>
+                        <li><a href="#" class="hover:opacity-80 transition">Roadmap</a></li>
+                        <li><a href="#" class="hover:opacity-80 transition">Changelog</a></li>
                     </ul>
                 </div>
 
                 <!-- Company -->
                 <div>
-                    <h4 class="font-bold text-white mb-4">Company</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white transition">About Us</a></li>
-                        <li><a href="#" class="hover:text-white transition">Blog</a></li>
-                        <li><a href="#" class="hover:text-white transition">Careers</a></li>
-                        <li><a href="#" class="hover:text-white transition">Contact</a></li>
+                    <h4 class="font-bold mb-4" style="color: var(--color-foreground);">Company</h4>
+                    <ul class="space-y-2 text-sm" style="color: var(--color-muted-foreground);">
+                        <li><a href="#" class="hover:opacity-80 transition">About Us</a></li>
+                        <li><a href="#" class="hover:opacity-80 transition">Blog</a></li>
+                        <li><a href="#" class="hover:opacity-80 transition">Careers</a></li>
+                        <li><a href="#" class="hover:opacity-80 transition">Contact</a></li>
                     </ul>
                 </div>
 
                 <!-- Legal -->
                 <div>
-                    <h4 class="font-bold text-white mb-4">Legal</h4>
-                    <ul class="space-y-2 text-sm">
-                        <li><a href="#" class="hover:text-white transition">Privacy Policy</a></li>
-                        <li><a href="#" class="hover:text-white transition">Terms of Service</a></li>
-                        <li><a href="#" class="hover:text-white transition">Security</a></li>
-                        <li><a href="#" class="hover:text-white transition">GDPR</a></li>
+                    <h4 class="font-bold mb-4" style="color: var(--color-foreground);">Legal</h4>
+                    <ul class="space-y-2 text-sm" style="color: var(--color-muted-foreground);">
+                        <li><a href="#" class="hover:opacity-80 transition">Privacy Policy</a></li>
+                        <li><a href="#" class="hover:opacity-80 transition">Terms of Service</a></li>
+                        <li><a href="#" class="hover:opacity-80 transition">Security</a></li>
+                        <li><a href="#" class="hover:opacity-80 transition">GDPR</a></li>
                     </ul>
                 </div>
             </div>
