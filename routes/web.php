@@ -2,6 +2,10 @@
 
 use App\Http\Controllers\AccountController;
 use App\Http\Controllers\Auth\SocialiteController;
+use App\Http\Controllers\BillsController;
+use App\Http\Controllers\BudgetController;
+use App\Http\Controllers\PaySchedulesController;
+use App\Http\Controllers\TransactionsController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -38,5 +42,25 @@ Route::middleware(['auth', 'verified'])->group(function () {
         Route::get('/', [AccountController::class, 'index'])->name('index');
         Route::post('/link-token', [AccountController::class, 'createLinkToken'])->name('link-token');
         Route::post('/exchange-token', [AccountController::class, 'exchangePublicToken'])->name('exchange-token');
+    });
+
+    // Transactions
+    Route::prefix('transactions')->name('transactions.')->group(function () {
+        Route::get('/', [TransactionsController::class, 'index'])->name('index');
+    });
+
+    // Bills
+    Route::prefix('bills')->name('bills.')->group(function () {
+        Route::get('/', [BillsController::class, 'index'])->name('index');
+    });
+
+    // Pay Schedules
+    Route::prefix('pay-schedules')->name('pay-schedules.')->group(function () {
+        Route::get('/', [PaySchedulesController::class, 'index'])->name('index');
+    });
+
+    // Budget
+    Route::prefix('budget')->name('budget.')->group(function () {
+        Route::get('/', [BudgetController::class, 'index'])->name('index');
     });
 });

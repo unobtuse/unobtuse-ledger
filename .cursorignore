@@ -11,38 +11,12 @@ bower_components/
 
 # ============================================================
 # Build Artifacts & Compiled Assets
-# ============================================================
-public/build/
-public/hot
-public/storage
-public/mix-manifest.json
-public/css/
-public/js/
-resources/css/app.css
-resources/js/app.js
 
-# ============================================================
-# Cache & Temporary Files
-# ============================================================
-storage/framework/cache/
-storage/framework/sessions/
-storage/framework/views/
-storage/logs/
-storage/app/public/
-bootstrap/cache/
-.phpunit.result.cache
-.php-cs-fixer.cache
 
 # ============================================================
 # Environment & Configuration (Sensitive)
 # ============================================================
-.env
-.env.backup
-.env.production
-.env.*.php
-.env.php
-# Keep .env.example accessible for documentation
-!.env.example
+
 
 # ============================================================
 # IDE & Editor Files
@@ -58,9 +32,6 @@ Thumbs.db
 # ============================================================
 # Version Control
 # ============================================================
-.git/
-.gitattributes
-.gitignore
 
 # ============================================================
 # Database & Data Files
@@ -75,36 +46,20 @@ database/database.sqlite
 # ============================================================
 # Log Files
 # ============================================================
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-storage/logs/*.log
+
 
 # ============================================================
 # Test Coverage Reports
 # ============================================================
-coverage/
-.coverage
-htmlcov/
-*.cover
-.phpunit.result.cache
-tests/coverage/
 
 # ============================================================
 # Documentation Build Files
 # ============================================================
-docs/_build/
-docs/.doctrees/
-site/
+
 
 # ============================================================
 # Package Manager Lock Files (Large, generated)
 # ============================================================
-composer.lock
-package-lock.json
-yarn.lock
-pnpm-lock.yaml
 
 # ============================================================
 # Large Media Files (Optional - uncomment if needed)
@@ -137,16 +92,6 @@ public/vendor/horizon/
 # ============================================================
 # Development Progress Files (Keep out of searches)
 # ============================================================
-/docs/development/
-PROGRESS.md
-TODO.md
-DECISIONS.md
-CHANGELOG-DEV.md
-BUGS.md
-NOTES.md
-*-PROGRESS.md
-*-TODO.md
-*-NOTES.md
 
 # ============================================================
 # Backup Files
@@ -163,22 +108,10 @@ NOTES.md
 .DS_Store
 .DS_Store?
 ._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
-desktop.ini
+
 
 # ============================================================
 # Other
 # ============================================================
-*.pid
-*.seed
-*.pid.lock
-.npm
-.eslintcache
-.stylelintcache
-.node_repl_history
-*.tgz
-.yarn-integrity
+
 
