@@ -11,7 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        //
+        // Register Plaid webhook verification middleware
+        $middleware->alias([
+            'verify-plaid-webhook' => \App\Http\Middleware\VerifyPlaidWebhook::class,
+        ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {
         //

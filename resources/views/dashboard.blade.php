@@ -96,7 +96,7 @@
                                     {{ ucfirst($account->account_type) }} •••• {{ $account->mask }}
                                 </p>
                                 <div class="text-2xl font-semibold text-card-foreground">
-                                    {{ $account->getFormattedBalance() }}
+                                    {{ $account->formatted_balance }}
                                 </div>
                                 @if ($account->last_synced_at)
                                     <p class="text-xs text-muted-foreground mt-2">

@@ -458,6 +458,9 @@ class BillsList extends Component
         
         return Bill::where('id', $this->selectedBillId)
             ->where('user_id', auth()->id())
+            ->with(['transactions' => function ($query) {
+                $query->orderBy('transaction_date', 'desc');
+            }])
             ->first();
     }
     

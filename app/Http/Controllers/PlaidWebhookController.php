@@ -4,8 +4,11 @@ declare(strict_types=1);
 
 namespace App\Http\Controllers;
 
+use App\Jobs\SyncAccountBalances;
 use App\Jobs\SyncAccountTransactions;
 use App\Models\Account;
+use App\Notifications\PlaidAccountError;
+use App\Notifications\PlaidAccountRequiresReauth;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Log;
@@ -78,6 +81,7 @@ class PlaidWebhookController extends Controller
             'HISTORICAL_UPDATE' => $this->syncTransactionsForItem($itemId),
             'DEFAULT_UPDATE' => $this->syncTransactionsForItem($itemId),
             'TRANSACTIONS_REMOVED' => $this->handleTransactionsRemoved($request),
+            'RECURRING_TRANSACTIONS_UPDATE' => $this->handleRecurringTransactionsUpdate($itemId),
             default => Log::info('Unhandled TRANSACTIONS webhook code', ['code' => $code]),
         };
     }
@@ -97,6 +101,7 @@ class PlaidWebhookController extends Controller
             'PENDING_EXPIRATION' => $this->handlePendingExpiration($itemId),
             'USER_PERMISSION_REVOKED' => $this->handlePermissionRevoked($itemId),
             'WEBHOOK_UPDATE_ACKNOWLEDGED' => Log::info('Webhook acknowledged', ['item_id' => $itemId]),
+            'NEW_ACCOUNTS_AVAILABLE' => $this->handleNewAccountsAvailable($itemId),
             default => Log::info('Unhandled ITEM webhook code', ['code' => $code]),
         };
     }
@@ -112,7 +117,7 @@ class PlaidWebhookController extends Controller
     protected function handleAuthWebhook(string $code, string $itemId, Request $request): void
     {
         match($code) {
-            'AUTOMATICALLY_VERIFIED' => Log::info('Auth automatically verified', ['item_id' => $itemId]),
+            'AUTOMATICALLY_VERIFIED' => $this->handleAuthVerified($itemId),
             'VERIFICATION_EXPIRED' => Log::warning('Auth verification expired', ['item_id' => $itemId]),
             default => Log::info('Unhandled AUTH webhook code', ['code' => $code]),
         };
@@ -218,17 +223,30 @@ class PlaidWebhookController extends Controller
     protected function handleItemError(string $itemId, Request $request): void
     {
         $error = $request->input('error');
+        $errorCode = $error['error_code'] ?? 'UNKNOWN_ERROR';
+        $errorMessage = $error['error_message'] ?? 'Unknown error';
 
-        Account::where('plaid_item_id', $itemId)
-            ->update([
+        $accounts = Account::where('plaid_item_id', $itemId)->get();
+
+        foreach ($accounts as $account) {
+            $account->update([
                 'sync_status' => 'failed',
-                'sync_error' => $error['error_message'] ?? 'Unknown error',
+                'sync_error' => $errorMessage,
             ]);
+
+            // Send notification to user
+            $account->user->notify(new PlaidAccountError(
+                $account,
+                $errorCode,
+                $errorMessage
+            ));
+        }
 
         Log::error('Plaid item error', [
             'item_id' => $itemId,
-            'error_code' => $error['error_code'] ?? null,
-            'error_message' => $error['error_message'] ?? null,
+            'error_code' => $errorCode,
+            'error_message' => $errorMessage,
+            'accounts_affected' => $accounts->count(),
         ]);
     }
 
@@ -240,12 +258,19 @@ class PlaidWebhookController extends Controller
      */
     protected function handlePendingExpiration(string $itemId): void
     {
-        Account::where('plaid_item_id', $itemId)
-            ->update(['sync_status' => 'requires_update']);
+        $accounts = Account::where('plaid_item_id', $itemId)->get();
 
-        Log::warning('Plaid item pending expiration', ['item_id' => $itemId]);
+        foreach ($accounts as $account) {
+            $account->update(['sync_status' => 'requires_update']);
 
-        // TODO: Notify user to re-authenticate
+            // Send notification to user
+            $account->user->notify(new PlaidAccountRequiresReauth($account));
+        }
+
+        Log::warning('Plaid item pending expiration', [
+            'item_id' => $itemId,
+            'accounts_affected' => $accounts->count(),
+        ]);
     }
 
     /**
@@ -256,13 +281,74 @@ class PlaidWebhookController extends Controller
      */
     protected function handlePermissionRevoked(string $itemId): void
     {
-        Account::where('plaid_item_id', $itemId)
-            ->update([
+        $accounts = Account::where('plaid_item_id', $itemId)->get();
+
+        foreach ($accounts as $account) {
+            $account->update([
                 'sync_status' => 'disabled',
                 'is_active' => false,
             ]);
 
-        Log::warning('User revoked Plaid permissions', ['item_id' => $itemId]);
+            // Send notification to user about disconnected account
+            $account->user->notify(new PlaidAccountRequiresReauth($account));
+        }
+
+        Log::warning('User revoked Plaid permissions', [
+            'item_id' => $itemId,
+            'accounts_affected' => $accounts->count(),
+        ]);
+    }
+
+    /**
+     * Handle recurring transactions update.
+     *
+     * @param string $itemId
+     * @return void
+     */
+    protected function handleRecurringTransactionsUpdate(string $itemId): void
+    {
+        // Sync transactions to get updated recurring patterns
+        $this->syncTransactionsForItem($itemId);
+
+        Log::info('Recurring transactions update received', ['item_id' => $itemId]);
+    }
+
+    /**
+     * Handle new accounts available.
+     *
+     * @param string $itemId
+     * @return void
+     */
+    protected function handleNewAccountsAvailable(string $itemId): void
+    {
+        // Fetch accounts for this item to see if there are new ones
+        // This would typically trigger a sync of account list
+        // For now, we'll just log it - the user can manually refresh
+        Log::info('New accounts available for item', ['item_id' => $itemId]);
+
+        // Optionally, you could trigger an account refresh job here
+        // SyncAccounts::dispatch($itemId);
+    }
+
+    /**
+     * Handle auth verified - sync balances.
+     *
+     * @param string $itemId
+     * @return void
+     */
+    protected function handleAuthVerified(string $itemId): void
+    {
+        $accounts = Account::where('plaid_item_id', $itemId)->get();
+
+        foreach ($accounts as $account) {
+            // Sync balances when auth is verified
+            SyncAccountBalances::dispatch($account);
+        }
+
+        Log::info('Auth automatically verified, syncing balances', [
+            'item_id' => $itemId,
+            'accounts_count' => $accounts->count(),
+        ]);
     }
 }
 

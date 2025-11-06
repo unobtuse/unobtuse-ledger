@@ -6,6 +6,8 @@ namespace App\Jobs;
 
 use App\Models\Account;
 use App\Models\Transaction;
+use App\Jobs\DetectBills;
+use App\Jobs\MatchBillPayments;
 use App\Services\PlaidService;
 use Carbon\Carbon;
 use Illuminate\Bus\Queueable;
@@ -96,6 +98,8 @@ class SyncAccountTransactions implements ShouldQueue
             // Dispatch bill detection after successful sync
             if ($synced > 0) {
                 DetectBills::dispatch($this->account->user);
+                // Also match payments to existing bills
+                MatchBillPayments::dispatch($this->account->user);
             }
 
             Log::info('Transaction sync completed', [
@@ -151,11 +155,18 @@ class SyncAccountTransactions implements ShouldQueue
     protected function createTransaction(array $plaidTransaction): Transaction
     {
         // Determine transaction type
+        // Plaid: positive amounts = debits (money out), negative = credits (money in)
         $amount = $plaidTransaction['amount'];
         $transactionType = $amount > 0 ? 'debit' : 'credit';
 
         // Extract category
         $category = $this->extractCategory($plaidTransaction);
+
+        // Normalize payment_channel (Plaid uses "in store" but we use "in_store")
+        $paymentChannel = $this->normalizePaymentChannel($plaidTransaction['payment_channel'] ?? null);
+
+        // Safely extract location data
+        $location = $plaidTransaction['location'] ?? [];
 
         return Transaction::create([
             'user_id' => $this->account->user_id,
@@ -163,7 +174,7 @@ class SyncAccountTransactions implements ShouldQueue
             'plaid_transaction_id' => $plaidTransaction['transaction_id'],
             'name' => $plaidTransaction['name'],
             'merchant_name' => $plaidTransaction['merchant_name'] ?? null,
-            'amount' => abs($amount),
+            'amount' => $amount, // Store as-is: positive for debits, negative for credits
             'iso_currency_code' => $plaidTransaction['iso_currency_code'] ?? 'USD',
             'transaction_date' => $plaidTransaction['date'],
             'authorized_date' => $plaidTransaction['authorized_date'] ?? null,
@@ -173,16 +184,37 @@ class SyncAccountTransactions implements ShouldQueue
             'category_id' => $plaidTransaction['category_id'] ?? null,
             'transaction_type' => $transactionType,
             'pending' => $plaidTransaction['pending'] ?? false,
-            'location_address' => $plaidTransaction['location']['address'] ?? null,
-            'location_city' => $plaidTransaction['location']['city'] ?? null,
-            'location_region' => $plaidTransaction['location']['region'] ?? null,
-            'location_postal_code' => $plaidTransaction['location']['postal_code'] ?? null,
-            'location_country' => $plaidTransaction['location']['country'] ?? null,
-            'location_lat' => $plaidTransaction['location']['lat'] ?? null,
-            'location_lon' => $plaidTransaction['location']['lon'] ?? null,
-            'payment_channel' => $plaidTransaction['payment_channel'] ?? null,
+            'location_address' => $location['address'] ?? null,
+            'location_city' => $location['city'] ?? null,
+            'location_region' => $location['region'] ?? null,
+            'location_postal_code' => $location['postal_code'] ?? null,
+            'location_country' => $location['country'] ?? null,
+            'location_lat' => $location['lat'] ?? null,
+            'location_lon' => $location['lon'] ?? null,
+            'payment_channel' => $paymentChannel,
             'metadata' => $plaidTransaction,
         ]);
+    }
+
+    /**
+     * Normalize payment channel from Plaid format to our enum values.
+     *
+     * @param string|null $paymentChannel
+     * @return string|null
+     */
+    protected function normalizePaymentChannel(?string $paymentChannel): ?string
+    {
+        if (!$paymentChannel) {
+            return null;
+        }
+
+        // Plaid uses "in store" (with space) but our enum uses "in_store" (with underscore)
+        return match(strtolower($paymentChannel)) {
+            'in store', 'in_store' => 'in_store',
+            'online' => 'online',
+            'other' => 'other',
+            default => 'other', // Default to 'other' for any unknown values
+        };
     }
 
     /**

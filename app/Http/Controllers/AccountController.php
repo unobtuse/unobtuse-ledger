@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers;
 
 use App\Jobs\SyncAccountTransactions;
+use App\Jobs\SyncAccountLiabilities;
 use App\Models\Account;
 use App\Services\PlaidService;
 use Illuminate\Http\JsonResponse;
@@ -49,11 +50,7 @@ class AccountController extends Controller
     {
         try {
             $user = auth()->user();
-            $linkTokenResponse = $this->plaidService->createLinkToken(
-                (string) $user->id,
-                config('app.name'),
-                $user->email
-            );
+            $linkTokenResponse = $this->plaidService->createLinkToken($user);
 
             return response()->json([
                 'link_token' => $linkTokenResponse['link_token'],
@@ -131,6 +128,11 @@ class AccountController extends Controller
                 // Dispatch transaction sync job
                 SyncAccountTransactions::dispatch($account);
 
+                // Dispatch liabilities sync job for eligible account types
+                if (in_array($account->account_type, ['credit_card', 'loan'])) {
+                    SyncAccountLiabilities::dispatch($account);
+                }
+
                 $createdAccounts[] = $account;
             }
 
@@ -203,9 +205,9 @@ class AccountController extends Controller
      * Disconnect account.
      *
      * @param Account $account
-     * @return RedirectResponse
+     * @return JsonResponse|RedirectResponse
      */
-    public function disconnect(Account $account): RedirectResponse
+    public function disconnect(Account $account)
     {
         $this->authorize('delete', $account);
 
@@ -217,6 +219,13 @@ class AccountController extends Controller
             $account->update(['is_active' => false]);
             $account->delete();
 
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Account disconnected successfully.',
+                ]);
+            }
+
             return redirect()->route('accounts.index')
                 ->with('success', 'Account disconnected successfully.');
 
@@ -225,6 +234,12 @@ class AccountController extends Controller
                 'account_id' => $account->id,
                 'error' => $e->getMessage(),
             ]);
+
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'error' => 'Failed to disconnect account.',
+                ], 500);
+            }
 
             return redirect()->route('accounts.index')
                 ->with('error', 'Failed to disconnect account.');
@@ -235,14 +250,21 @@ class AccountController extends Controller
      * Trigger manual sync for an account.
      *
      * @param Account $account
-     * @return RedirectResponse
+     * @return JsonResponse|RedirectResponse
      */
-    public function sync(Account $account): RedirectResponse
+    public function sync(Account $account)
     {
         $this->authorize('update', $account);
 
         try {
             SyncAccountTransactions::dispatch($account);
+
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Transaction sync started. This may take a few moments.',
+                ]);
+            }
 
             return redirect()->back()
                 ->with('success', 'Transaction sync started. This may take a few moments.');
@@ -253,8 +275,96 @@ class AccountController extends Controller
                 'error' => $e->getMessage(),
             ]);
 
+            if (request()->expectsJson()) {
+                return response()->json([
+                    'error' => 'Failed to start sync.',
+                ], 500);
+            }
+
             return redirect()->back()
                 ->with('error', 'Failed to start sync.');
+        }
+    }
+
+    /**
+     * Update account nickname.
+     *
+     * @param Request $request
+     * @param Account $account
+     * @return JsonResponse
+     */
+    public function updateNickname(Request $request, Account $account): JsonResponse
+    {
+        $this->authorize('update', $account);
+
+        $request->validate([
+            'nickname' => 'nullable|string|max:255',
+        ]);
+
+        try {
+            $account->update([
+                'nickname' => $request->nickname ?: null,
+            ]);
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Nickname updated successfully!',
+                'display_name' => $account->display_name_without_mask,
+            ]);
+        } catch (\Exception $e) {
+            Log::error('Failed to update nickname', [
+                'account_id' => $account->id,
+                'error' => $e->getMessage(),
+            ]);
+
+            return response()->json([
+                'error' => 'Failed to update nickname.',
+            ], 500);
+        }
+    }
+
+    /**
+     * Handle Plaid OAuth callback.
+     * This is called when Plaid redirects back after OAuth authentication.
+     * We render the accounts page so the JavaScript can detect OAuth state and complete the flow.
+     *
+     * @param Request $request
+     * @return View|RedirectResponse
+     */
+    public function oauthCallback(Request $request)
+    {
+        try {
+            // Get OAuth state and code from query parameters
+            $oauthStateId = $request->query('oauth_state_id');
+            $error = $request->query('error');
+            
+            if ($error) {
+                Log::error('Plaid OAuth callback error', [
+                    'error' => $error,
+                    'user_id' => auth()->id(),
+                ]);
+                
+                return redirect()->route('accounts.index')
+                    ->with('error', 'Account linking failed. Please try again.');
+            }
+            
+            // Render the accounts page - the JavaScript will detect oauth_state_id
+            // and automatically reinitialize Plaid Link to complete the OAuth flow
+            $accounts = auth()->user()->accounts()
+                ->orderBy('is_active', 'desc')
+                ->orderBy('created_at', 'desc')
+                ->get();
+
+            return view('accounts.index', compact('accounts'));
+                
+        } catch (\Exception $e) {
+            Log::error('Plaid OAuth callback failed', [
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+            
+            return redirect()->route('accounts.index')
+                ->with('error', 'Failed to process OAuth callback.');
         }
     }
 

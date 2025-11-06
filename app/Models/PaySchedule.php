@@ -4,6 +4,7 @@ declare(strict_types=1);
 
 namespace App\Models;
 
+use App\Models\Bill;
 use Carbon\Carbon;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -77,7 +78,7 @@ class PaySchedule extends Model
      */
     public function calculateNextPayDate(): Carbon
     {
-        $current = $this->next_pay_date ?? now();
+        $current = ($this->next_pay_date ?? now())->copy();
 
         return match($this->frequency) {
             'weekly' => $this->calculateWeeklyPayDate($current),
@@ -204,7 +205,264 @@ class PaySchedule extends Model
      */
     public function getDaysUntilPaydayAttribute(): int
     {
-        return now()->diffInDays($this->next_pay_date, false);
+        if (!$this->next_pay_date) {
+            return 0;
+        }
+        return (int) now()->diffInDays($this->next_pay_date, false);
+    }
+
+    /**
+     * Get bills due before next payday.
+     *
+     * @return \Illuminate\Database\Eloquent\Collection
+     */
+    public function getBillsDueBeforePayday()
+    {
+        if (!$this->next_pay_date) {
+            return collect([]);
+        }
+
+        return Bill::where('user_id', $this->user_id)
+            ->dueBeforePayday($this->next_pay_date)
+            ->orderBy('next_due_date', 'asc')
+            ->get();
+    }
+
+    /**
+     * Get total amount of bills due before next payday.
+     *
+     * @return float
+     */
+    public function getTotalBillsDueBeforePayday(): float
+    {
+        $bills = $this->getBillsDueBeforePayday();
+        return (float) $bills->sum('amount');
+    }
+
+    /**
+     * Get available funds after bills are paid.
+     *
+     * @return float
+     */
+    public function getAvailableAfterBillsAttribute(): float
+    {
+        if (!$this->net_pay) {
+            return 0;
+        }
+
+        $billsTotal = $this->getTotalBillsDueBeforePayday();
+        return max(0, (float) $this->net_pay - $billsTotal);
+    }
+
+    /**
+     * Calculate next N pay dates from a given date.
+     *
+     * @param int $count Number of pay dates to calculate
+     * @param Carbon|null $fromDate Starting date (defaults to next_pay_date or now)
+     * @return array Array of Carbon dates
+     */
+    public function calculateUpcomingPayDates(int $count = 6, ?Carbon $fromDate = null): array
+    {
+        if (!$fromDate) {
+            $fromDate = $this->next_pay_date ?? now();
+        }
+
+        $dates = [];
+        $currentDate = $fromDate->copy();
+
+        for ($i = 0; $i < $count; $i++) {
+            if ($i === 0 && $currentDate->isFuture()) {
+                // Use the stored next_pay_date if it's in the future
+                $dates[] = $currentDate->copy();
+                $currentDate = $this->calculateNextPayDateFrom($currentDate);
+            } else {
+                $nextDate = $this->calculateNextPayDateFrom($currentDate);
+                $dates[] = $nextDate;
+                $currentDate = $nextDate->copy();
+            }
+        }
+
+        return $dates;
+    }
+
+    /**
+     * Calculate next pay date from a given date.
+     *
+     * @param Carbon $fromDate
+     * @return Carbon
+     */
+    public function calculateNextPayDateFrom(Carbon $fromDate): Carbon
+    {
+        return match($this->frequency) {
+            'weekly' => $this->calculateWeeklyPayDateFrom($fromDate),
+            'biweekly' => $this->calculateBiweeklyPayDateFrom($fromDate),
+            'semimonthly' => $this->calculateSemimonthlyPayDateFrom($fromDate),
+            'monthly' => $this->calculateMonthlyPayDateFrom($fromDate),
+            'custom' => $this->calculateCustomPayDateFrom($fromDate),
+            default => $fromDate->copy()->addWeeks(2),
+        };
+    }
+
+    /**
+     * Calculate weekly pay date from a given date.
+     *
+     * @param Carbon $fromDate
+     * @return Carbon
+     */
+    protected function calculateWeeklyPayDateFrom(Carbon $fromDate): Carbon
+    {
+        if (!$this->pay_day_of_week) {
+            return $fromDate->copy()->addWeek();
+        }
+
+        $dayMap = [
+            'monday' => Carbon::MONDAY,
+            'tuesday' => Carbon::TUESDAY,
+            'wednesday' => Carbon::WEDNESDAY,
+            'thursday' => Carbon::THURSDAY,
+            'friday' => Carbon::FRIDAY,
+            'saturday' => Carbon::SATURDAY,
+            'sunday' => Carbon::SUNDAY,
+        ];
+
+        $targetDay = $dayMap[strtolower($this->pay_day_of_week)] ?? Carbon::FRIDAY;
+        $nextDate = $fromDate->copy()->next($targetDay);
+
+        // If today is the pay day and it hasn't passed, return today
+        if ($fromDate->dayOfWeek === $targetDay && $fromDate->isFuture()) {
+            return $fromDate->copy();
+        }
+
+        return $nextDate;
+    }
+
+    /**
+     * Calculate biweekly pay date from a given date.
+     *
+     * @param Carbon $fromDate
+     * @return Carbon
+     */
+    protected function calculateBiweeklyPayDateFrom(Carbon $fromDate): Carbon
+    {
+        // Use next_pay_date as the reference point
+        $referenceDate = $this->next_pay_date ?? now();
+        
+        // Calculate how many biweekly periods have passed
+        $daysDiff = $fromDate->diffInDays($referenceDate);
+        $periodsPassed = floor($daysDiff / 14);
+        
+        $nextDate = $referenceDate->copy()->addWeeks($periodsPassed * 2);
+        
+        // If the calculated date is in the past, add 2 more weeks
+        while ($nextDate->isBefore($fromDate) || $nextDate->isSameDay($fromDate)) {
+            $nextDate->addWeeks(2);
+        }
+        
+        return $nextDate;
+    }
+
+    /**
+     * Calculate semimonthly pay date from a given date.
+     *
+     * @param Carbon $fromDate
+     * @return Carbon
+     */
+    protected function calculateSemimonthlyPayDateFrom(Carbon $fromDate): Carbon
+    {
+        $day1 = $this->pay_day_of_month_1 ?? 1;
+        $day2 = $this->pay_day_of_month_2 ?? 15;
+        $currentDay = $fromDate->day;
+        $currentMonth = $fromDate->copy();
+
+        // Determine which pay date we're closest to
+        if ($currentDay < $day1) {
+            // Before first payday of month
+            return $currentMonth->setDay(min($day1, $currentMonth->daysInMonth));
+        } elseif ($currentDay < $day2) {
+            // Between first and second payday
+            return $currentMonth->setDay(min($day2, $currentMonth->daysInMonth));
+        } else {
+            // After second payday, next is first of next month
+            return $currentMonth->addMonth()->setDay(min($day1, $currentMonth->daysInMonth));
+        }
+    }
+
+    /**
+     * Calculate monthly pay date from a given date.
+     *
+     * @param Carbon $fromDate
+     * @return Carbon
+     */
+    protected function calculateMonthlyPayDateFrom(Carbon $fromDate): Carbon
+    {
+        $payDay = $this->pay_day_of_month_1 ?? 1;
+        $currentMonth = $fromDate->copy();
+
+        if ($fromDate->day < $payDay) {
+            // Before payday this month
+            return $currentMonth->setDay(min($payDay, $currentMonth->daysInMonth));
+        } else {
+            // After payday, next month
+            return $currentMonth->addMonth()->setDay(min($payDay, $currentMonth->daysInMonth));
+        }
+    }
+
+    /**
+     * Calculate custom pay date from schedule.
+     *
+     * @param Carbon $fromDate
+     * @return Carbon
+     */
+    protected function calculateCustomPayDateFrom(Carbon $fromDate): Carbon
+    {
+        if (!$this->custom_schedule || empty($this->custom_schedule)) {
+            return $fromDate->copy()->addWeeks(2);
+        }
+
+        // Find next date in custom schedule
+        foreach ($this->custom_schedule as $date) {
+            $payDate = Carbon::parse($date);
+            if ($payDate->isAfter($fromDate) || $payDate->isSameDay($fromDate)) {
+                return $payDate;
+            }
+        }
+
+        // If no future dates, return first date of next cycle
+        return Carbon::parse($this->custom_schedule[0])->addYear();
+    }
+
+    /**
+     * Get formatted gross pay.
+     *
+     * @return string
+     */
+    public function getFormattedGrossPayAttribute(): string
+    {
+        if (!$this->gross_pay) {
+            return 'Not set';
+        }
+
+        return $this->currency . ' ' . number_format((float) $this->gross_pay, 2);
+    }
+
+    /**
+     * Get formatted rent allocation.
+     *
+     * @return string
+     */
+    public function getFormattedRentAllocationAttribute(): string
+    {
+        return $this->currency . ' ' . number_format($this->rent_allocation, 2);
+    }
+
+    /**
+     * Get formatted available after bills.
+     *
+     * @return string
+     */
+    public function getFormattedAvailableAfterBillsAttribute(): string
+    {
+        return $this->currency . ' ' . number_format($this->available_after_bills, 2);
     }
 
     /**

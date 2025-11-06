@@ -5,6 +5,7 @@ declare(strict_types=1);
 namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
+use App\Jobs\RefreshAllAccountBalances;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Auth;
@@ -79,6 +80,9 @@ class SocialiteController extends Controller
 
             // Log the user in
             Auth::login($user, true); // Remember the user
+
+            // Refresh account balances in background
+            RefreshAllAccountBalances::dispatch($user);
 
             // Redirect to dashboard
             return redirect()->intended(config('fortify.home'));

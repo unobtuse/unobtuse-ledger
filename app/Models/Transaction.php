@@ -30,6 +30,7 @@ class Transaction extends Model
     protected $fillable = [
         'user_id',
         'account_id',
+        'bill_id',
         'plaid_transaction_id',
         'name',
         'merchant_name',
@@ -97,6 +98,14 @@ class Transaction extends Model
     public function account(): BelongsTo
     {
         return $this->belongsTo(Account::class);
+    }
+
+    /**
+     * Get the bill associated with this transaction (if it's a bill payment).
+     */
+    public function bill(): BelongsTo
+    {
+        return $this->belongsTo(Bill::class);
     }
 
     /**
@@ -188,5 +197,42 @@ class Transaction extends Model
             $q->where('category', $category)
               ->orWhere('user_category', $category);
         });
+    }
+
+    /**
+     * Get the date attribute (backwards compatibility).
+     * Returns transaction_date for easier access in views.
+     *
+     * @return \Carbon\Carbon|null
+     */
+    public function getDateAttribute()
+    {
+        return $this->transaction_date;
+    }
+
+    /**
+     * Get the categories attribute (backwards compatibility).
+     * Returns user_category if set, otherwise plaid_categories.
+     *
+     * @return array
+     */
+    public function getCategoriesAttribute(): array
+    {
+        // If user has set a custom category, return it as array
+        if ($this->user_category) {
+            return [$this->user_category];
+        }
+
+        // Otherwise return plaid_categories if available
+        if ($this->plaid_categories && is_array($this->plaid_categories)) {
+            return $this->plaid_categories;
+        }
+
+        // Fallback to category field if it exists
+        if ($this->category) {
+            return [$this->category];
+        }
+
+        return [];
     }
 }

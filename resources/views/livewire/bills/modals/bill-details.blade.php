@@ -166,6 +166,43 @@
                         </div>
                     @endif
 
+                    <!-- Payment Transactions -->
+                    @if($selectedBill->transactions && $selectedBill->transactions->count() > 0)
+                        <div>
+                            <p class="text-sm font-medium text-muted-foreground mb-3">Payment Transactions</p>
+                            <div class="space-y-2">
+                                @foreach($selectedBill->transactions->take(5) as $transaction)
+                                    <div class="flex items-center justify-between p-3 bg-muted rounded-[var(--radius-sm)]">
+                                        <div class="flex-1">
+                                            <p class="text-sm font-medium text-card-foreground">
+                                                {{ $transaction->merchant_name ?? $transaction->name }}
+                                            </p>
+                                            <p class="text-xs text-muted-foreground">
+                                                {{ $transaction->transaction_date->format('M d, Y') }}
+                                                @if($transaction->account)
+                                                    • {{ $transaction->account->name }}
+                                                @endif
+                                            </p>
+                                        </div>
+                                        <div class="text-right">
+                                            <p class="text-sm font-semibold text-card-foreground">
+                                                {{ $transaction->iso_currency_code }} {{ number_format(abs((float) $transaction->amount), 2) }}
+                                            </p>
+                                            @if($transaction->pending)
+                                                <span class="text-xs text-muted-foreground">Pending</span>
+                                            @endif
+                                        </div>
+                                    </div>
+                                @endforeach
+                                @if($selectedBill->transactions->count() > 5)
+                                    <p class="text-xs text-muted-foreground text-center">
+                                        + {{ $selectedBill->transactions->count() - 5 }} more payment(s)
+                                    </p>
+                                @endif
+                            </div>
+                        </div>
+                    @endif
+
                     <!-- Reminder Settings -->
                     @if($selectedBill->reminder_enabled)
                         <div>

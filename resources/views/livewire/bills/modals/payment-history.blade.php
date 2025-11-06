@@ -61,7 +61,47 @@
 
                 <!-- Payment History List -->
                 <div class="space-y-3">
-                    @if($selectedBill->last_payment_date)
+                    @if($selectedBill->transactions && $selectedBill->transactions->count() > 0)
+                        @foreach($selectedBill->transactions as $transaction)
+                            <div class="flex items-center justify-between p-4 border border-border rounded-[var(--radius-default)] hover:bg-muted/50 transition-all duration-150">
+                                <div class="flex-1">
+                                    <div class="flex items-center gap-2 mb-1">
+                                        <svg class="w-5 h-5 text-chart-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                        </svg>
+                                        <p class="font-semibold text-card-foreground">
+                                            {{ $transaction->merchant_name ?? $transaction->name }}
+                                        </p>
+                                        @if($transaction->pending)
+                                            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-chart-4/20 text-chart-4">
+                                                Pending
+                                            </span>
+                                        @endif
+                                    </div>
+                                    <p class="text-sm text-muted-foreground">
+                                        {{ $transaction->transaction_date->format('F d, Y') }}
+                                        @if($transaction->account)
+                                            • {{ $transaction->account->name }}
+                                        @endif
+                                    </p>
+                                    @if($transaction->category)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-muted text-muted-foreground mt-2">
+                                            {{ ucfirst($transaction->category) }}
+                                        </span>
+                                    @endif
+                                </div>
+                                <div class="text-right ml-4">
+                                    <p class="text-xl font-semibold text-chart-2">
+                                        {{ $transaction->iso_currency_code }} {{ number_format(abs((float) $transaction->amount), 2) }}
+                                    </p>
+                                    <p class="text-xs text-muted-foreground mt-1">
+                                        {{ $transaction->transaction_date->diffForHumans() }}
+                                    </p>
+                                </div>
+                            </div>
+                        @endforeach
+                    @elseif($selectedBill->last_payment_date)
+                        <!-- Fallback to last payment date if no transactions linked -->
                         <div class="flex items-center justify-between p-4 border border-border rounded-[var(--radius-default)] hover:bg-muted/50 transition-all duration-150">
                             <div class="flex-1">
                                 <div class="flex items-center gap-2 mb-1">

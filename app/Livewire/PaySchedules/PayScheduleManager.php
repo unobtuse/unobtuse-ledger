@@ -12,30 +12,34 @@ use Livewire\Component;
 /**
  * Pay Schedule Manager Livewire Component
  * 
- * Manages user pay schedules with frequency configuration
- * and next pay date calculations.
+ * Manages user pay schedules with frequency configuration,
+ * bills integration, and income projections.
  */
 class PayScheduleManager extends Component
 {
-    // Form fields
-    public string $frequency = 'monthly'; // 'weekly', 'biweekly', 'semi-monthly', 'monthly'
-    public float $amount = 0;
-    public string $pay_day = '1'; // Day of week (0-6) for weekly, day of month (1-31) for monthly
-    public string $second_pay_day = '15'; // For semi-monthly
-    public string $start_date = ''; // For biweekly
-    public bool $is_gross = false;
+    // Form fields - matching model structure
+    public string $frequency = 'biweekly';
+    public ?float $gross_pay = null;
+    public ?float $net_pay = null;
+    public string $currency = 'USD';
+    public ?string $employer_name = null;
+    public ?string $pay_day_of_week = null; // For weekly/biweekly: monday, tuesday, etc.
+    public ?int $pay_day_of_month_1 = null; // For monthly/semimonthly: 1-31
+    public ?int $pay_day_of_month_2 = null; // For semimonthly: 1-31
+    public ?string $next_pay_date = null;
+    public ?string $notes = null;
     
     // Modal states
     public bool $showCreateModal = false;
     public bool $showEditModal = false;
-    public ?int $selectedScheduleId = null;
+    public ?string $selectedScheduleId = null;
     
     /**
      * Mount component
      */
     public function mount(): void
     {
-        $this->start_date = now()->toDateString();
+        $this->next_pay_date = now()->addWeeks(2)->toDateString();
     }
     
     /**
@@ -50,7 +54,7 @@ class PayScheduleManager extends Component
     /**
      * Open edit modal
      */
-    public function edit(int $scheduleId): void
+    public function edit(string $scheduleId): void
     {
         $schedule = PaySchedule::where('id', $scheduleId)
             ->where('user_id', auth()->id())
@@ -58,11 +62,15 @@ class PayScheduleManager extends Component
         
         $this->selectedScheduleId = $scheduleId;
         $this->frequency = $schedule->frequency;
-        $this->amount = $schedule->amount;
-        $this->pay_day = $schedule->pay_day ?? '1';
-        $this->second_pay_day = $schedule->second_pay_day ?? '15';
-        $this->start_date = $schedule->start_date ?? now()->toDateString();
-        $this->is_gross = $schedule->is_gross;
+        $this->gross_pay = $schedule->gross_pay;
+        $this->net_pay = $schedule->net_pay;
+        $this->currency = $schedule->currency ?? 'USD';
+        $this->employer_name = $schedule->employer_name;
+        $this->pay_day_of_week = $schedule->pay_day_of_week;
+        $this->pay_day_of_month_1 = $schedule->pay_day_of_month_1;
+        $this->pay_day_of_month_2 = $schedule->pay_day_of_month_2;
+        $this->next_pay_date = $schedule->next_pay_date?->toDateString() ?? now()->addWeeks(2)->toDateString();
+        $this->notes = $schedule->notes;
         
         $this->showEditModal = true;
     }
@@ -72,24 +80,50 @@ class PayScheduleManager extends Component
      */
     public function save(): void
     {
-        $this->validate([
-            'frequency' => 'required|in:weekly,biweekly,semi-monthly,monthly',
-            'amount' => 'required|numeric|min:0',
-            'pay_day' => 'required',
-            'second_pay_day' => 'required_if:frequency,semi-monthly',
-            'start_date' => 'required_if:frequency,biweekly|nullable|date',
-        ]);
+        $rules = [
+            'frequency' => 'required|in:weekly,biweekly,semimonthly,monthly,custom',
+            'net_pay' => 'required|numeric|min:0',
+            'currency' => 'required|string|size:3',
+            'next_pay_date' => 'required|date|after_or_equal:today',
+        ];
+
+        // Add conditional rules based on frequency
+        if ($this->frequency === 'weekly' || $this->frequency === 'biweekly') {
+            $rules['pay_day_of_week'] = 'required|in:monday,tuesday,wednesday,thursday,friday,saturday,sunday';
+        } elseif ($this->frequency === 'semimonthly') {
+            $rules['pay_day_of_month_1'] = 'required|integer|min:1|max:31';
+            $rules['pay_day_of_month_2'] = 'required|integer|min:1|max:31';
+        } elseif ($this->frequency === 'monthly') {
+            $rules['pay_day_of_month_1'] = 'required|integer|min:1|max:31';
+        }
+
+        $this->validate($rules);
         
         $data = [
             'user_id' => auth()->id(),
             'frequency' => $this->frequency,
-            'amount' => $this->amount,
-            'pay_day' => $this->frequency === 'weekly' || $this->frequency === 'biweekly' || $this->frequency === 'monthly' || $this->frequency === 'semi-monthly' ? $this->pay_day : null,
-            'second_pay_day' => $this->frequency === 'semi-monthly' ? $this->second_pay_day : null,
-            'start_date' => $this->frequency === 'biweekly' ? $this->start_date : null,
-            'is_gross' => $this->is_gross,
-            'is_active' => true,
+            'net_pay' => $this->net_pay,
+            'gross_pay' => $this->gross_pay,
+            'currency' => $this->currency,
+            'employer_name' => $this->employer_name,
+            'next_pay_date' => $this->next_pay_date,
+            'notes' => $this->notes,
         ];
+
+        // Set frequency-specific fields
+        if ($this->frequency === 'weekly' || $this->frequency === 'biweekly') {
+            $data['pay_day_of_week'] = $this->pay_day_of_week;
+            $data['pay_day_of_month_1'] = null;
+            $data['pay_day_of_month_2'] = null;
+        } elseif ($this->frequency === 'semimonthly') {
+            $data['pay_day_of_month_1'] = $this->pay_day_of_month_1;
+            $data['pay_day_of_month_2'] = $this->pay_day_of_month_2;
+            $data['pay_day_of_week'] = null;
+        } elseif ($this->frequency === 'monthly') {
+            $data['pay_day_of_month_1'] = $this->pay_day_of_month_1;
+            $data['pay_day_of_month_2'] = null;
+            $data['pay_day_of_week'] = null;
+        }
         
         if ($this->showEditModal && $this->selectedScheduleId) {
             // Update existing schedule
@@ -104,6 +138,7 @@ class PayScheduleManager extends Component
                 ->update(['is_active' => false]);
             
             // Create new schedule
+            $data['is_active'] = true;
             PaySchedule::create($data);
             session()->flash('success', 'Pay schedule created successfully!');
         }
@@ -115,7 +150,7 @@ class PayScheduleManager extends Component
     /**
      * Activate a pay schedule
      */
-    public function activate(int $scheduleId): void
+    public function activate(string $scheduleId): void
     {
         // Deactivate all schedules
         PaySchedule::where('user_id', auth()->id())
@@ -132,7 +167,7 @@ class PayScheduleManager extends Component
     /**
      * Delete pay schedule
      */
-    public function delete(int $scheduleId): void
+    public function delete(string $scheduleId): void
     {
         PaySchedule::where('id', $scheduleId)
             ->where('user_id', auth()->id())
@@ -157,12 +192,16 @@ class PayScheduleManager extends Component
      */
     protected function resetForm(): void
     {
-        $this->frequency = 'monthly';
-        $this->amount = 0;
-        $this->pay_day = '1';
-        $this->second_pay_day = '15';
-        $this->start_date = now()->toDateString();
-        $this->is_gross = false;
+        $this->frequency = 'biweekly';
+        $this->gross_pay = null;
+        $this->net_pay = null;
+        $this->currency = 'USD';
+        $this->employer_name = null;
+        $this->pay_day_of_week = null;
+        $this->pay_day_of_month_1 = null;
+        $this->pay_day_of_month_2 = null;
+        $this->next_pay_date = now()->addWeeks(2)->toDateString();
+        $this->notes = null;
         $this->selectedScheduleId = null;
     }
     
@@ -188,7 +227,7 @@ class PayScheduleManager extends Component
     }
     
     /**
-     * Calculate next 6 pay dates
+     * Get upcoming pay dates using model method
      */
     protected function getUpcomingPayDates(): array
     {
@@ -198,68 +237,55 @@ class PayScheduleManager extends Component
             return [];
         }
         
-        $dates = [];
-        $currentDate = now();
-        
-        for ($i = 0; $i < 6; $i++) {
-            $nextDate = $this->calculateNextPayDate($schedule, $currentDate);
-            if ($nextDate) {
-                $dates[] = $nextDate->format('Y-m-d');
-                $currentDate = $nextDate->addDay();
-            }
-        }
-        
-        return $dates;
+        $dates = $schedule->calculateUpcomingPayDates(6);
+        return array_map(fn($date) => $date->toDateString(), $dates);
     }
     
     /**
-     * Calculate next pay date based on schedule
+     * Get bills due before next payday
      */
-    protected function calculateNextPayDate(PaySchedule $schedule, Carbon $fromDate): ?Carbon
+    protected function getBillsDueBeforePayday()
     {
-        switch ($schedule->frequency) {
-            case 'weekly':
-                $dayOfWeek = (int) $schedule->pay_day;
-                $nextDate = $fromDate->copy()->next($dayOfWeek);
-                if ($fromDate->dayOfWeek === $dayOfWeek && $fromDate->isFuture()) {
-                    return $fromDate;
-                }
-                return $nextDate;
-                
-            case 'biweekly':
-                $startDate = Carbon::parse($schedule->start_date);
-                $daysDiff = $fromDate->diffInDays($startDate);
-                $weeksPassed = floor($daysDiff / 14);
-                $nextDate = $startDate->copy()->addWeeks($weeksPassed + 1);
-                while ($nextDate->isPast()) {
-                    $nextDate->addWeeks(2);
-                }
-                return $nextDate;
-                
-            case 'semi-monthly':
-                $day1 = (int) $schedule->pay_day;
-                $day2 = (int) $schedule->second_pay_day;
-                $currentDay = $fromDate->day;
-                
-                if ($currentDay < $day1) {
-                    return $fromDate->copy()->day($day1);
-                } elseif ($currentDay < $day2) {
-                    return $fromDate->copy()->day($day2);
-                } else {
-                    return $fromDate->copy()->addMonth()->day($day1);
-                }
-                
-            case 'monthly':
-                $payDay = (int) $schedule->pay_day;
-                if ($fromDate->day < $payDay) {
-                    return $fromDate->copy()->day($payDay);
-                } else {
-                    return $fromDate->copy()->addMonth()->day($payDay);
-                }
-                
-            default:
-                return null;
+        $schedule = $this->getActiveSchedule();
+        
+        if (!$schedule || !$schedule->next_pay_date) {
+            return collect([]);
         }
+        
+        return $schedule->getBillsDueBeforePayday();
+    }
+    
+    /**
+     * Get income projection for next 6 months
+     */
+    protected function getIncomeProjection(): array
+    {
+        $schedule = $this->getActiveSchedule();
+        
+        if (!$schedule || !$schedule->net_pay) {
+            return [];
+        }
+        
+        $projection = [];
+        $dates = $schedule->calculateUpcomingPayDates(12); // Get 12 pay dates (roughly 6 months)
+        $currentMonth = now()->format('Y-m');
+        $months = [];
+        
+        foreach ($dates as $date) {
+            $monthKey = $date->format('Y-m');
+            if (!isset($months[$monthKey])) {
+                $months[$monthKey] = [
+                    'month' => $date->format('F Y'),
+                    'pay_count' => 0,
+                    'total' => 0,
+                ];
+            }
+            $months[$monthKey]['pay_count']++;
+            $months[$monthKey]['total'] += (float) $schedule->net_pay;
+        }
+        
+        // Return first 6 months
+        return array_slice($months, 0, 6);
     }
     
     /**
@@ -267,12 +293,17 @@ class PayScheduleManager extends Component
      */
     public function render(): View
     {
+        $activeSchedule = $this->getActiveSchedule();
+        $billsDue = $this->getBillsDueBeforePayday();
+        $incomeProjection = $this->getIncomeProjection();
+        
         return view('livewire.pay-schedules.pay-schedule-manager', [
             'paySchedules' => $this->getPaySchedules(),
-            'activeSchedule' => $this->getActiveSchedule(),
+            'activeSchedule' => $activeSchedule,
             'upcomingPayDates' => $this->getUpcomingPayDates(),
+            'billsDue' => $billsDue,
+            'totalBillsDue' => $billsDue->sum('amount'),
+            'incomeProjection' => $incomeProjection,
         ]);
     }
 }
-
-

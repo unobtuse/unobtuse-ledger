@@ -26,10 +26,15 @@ class PlaidService
 
     public function __construct()
     {
-        $this->clientId = config('plaid.client_id');
-        $this->secret = config('plaid.secret');
+        $this->clientId = config('plaid.client_id') ?? '';
+        $this->secret = config('plaid.secret') ?? '';
         $this->environment = config('plaid.environment', 'sandbox');
-        $this->apiUrl = config('plaid.api_urls')[$this->environment];
+        
+        if (empty($this->clientId) || empty($this->secret)) {
+            throw new \RuntimeException('Plaid credentials are not configured. Please set PLAID_CLIENT_ID and PLAID_SECRET in your .env file.');
+        }
+        
+        $this->apiUrl = config('plaid.api_urls')[$this->environment] ?? config('plaid.api_urls')['sandbox'];
 
         $this->client = new Client([
             'base_uri' => $this->apiUrl,
@@ -49,20 +54,38 @@ class PlaidService
     public function createLinkToken(User $user): array
     {
         try {
-            $response = $this->client->post('/link/token/create', [
-                'json' => [
-                    'client_id' => $this->clientId,
-                    'secret' => $this->secret,
-                    'user' => [
-                        'client_user_id' => $user->id,
-                    ],
-                    'client_name' => config('app.name'),
-                    'products' => config('plaid.products'),
-                    'country_codes' => config('plaid.country_codes'),
-                    'language' => 'en',
-                    'webhook' => config('plaid.webhook_url'),
-                    'redirect_uri' => config('plaid.redirect_uri'),
+            $payload = [
+                'client_id' => $this->clientId,
+                'secret' => $this->secret,
+                'user' => [
+                    'client_user_id' => (string) $user->id,
                 ],
+                'client_name' => config('app.name'),
+                'products' => config('plaid.products'),
+                'country_codes' => config('plaid.country_codes'),
+                'language' => 'en',
+            ];
+            
+            // Only include webhook if configured and not empty
+            $webhookUrl = config('plaid.webhook_url');
+            if ($webhookUrl && !empty($webhookUrl) && $webhookUrl !== '${APP_URL}/api/plaid/webhook') {
+                $payload['webhook'] = $webhookUrl;
+            }
+            
+            // Only include redirect_uri if explicitly configured in Plaid dashboard
+            // OAuth redirect URI must be whitelisted in Plaid developer dashboard
+            // Skip if it's a placeholder or contains ${APP_URL} (not resolved)
+            // NOTE: Without redirect_uri, Plaid will redirect to its own OAuth page
+            // Users will need to manually return to complete the flow
+            $redirectUri = config('plaid.redirect_uri');
+            if ($redirectUri && !empty($redirectUri) && !str_contains($redirectUri, '${APP_URL}')) {
+                $payload['redirect_uri'] = $redirectUri;
+            }
+            // If redirect_uri is not configured, Plaid will use its default OAuth handler
+            // Users can manually navigate back to /accounts/oauth-callback?oauth_state_id=XXX
+            
+            $response = $this->client->post('/link/token/create', [
+                'json' => $payload,
             ]);
 
             $data = json_decode($response->getBody()->getContents(), true);
@@ -75,6 +98,7 @@ class PlaidService
             Log::error('Plaid Link Token Creation Failed', [
                 'user_id' => $user->id,
                 'error' => $e->getMessage(),
+                'response' => $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : null,
             ]);
 
             throw new \Exception('Failed to create Plaid link token: ' . $e->getMessage());
@@ -334,6 +358,45 @@ class PlaidService
             ]);
 
             return null;
+        }
+    }
+
+    /**
+     * Get liabilities data for accounts (due dates, interest rates, payment amounts).
+     *
+     * @param string $accessToken
+     * @return array
+     * @throws \Exception
+     */
+    public function getLiabilities(string $accessToken): array
+    {
+        try {
+            $response = $this->client->post('/liabilities/get', [
+                'json' => [
+                    'client_id' => $this->clientId,
+                    'secret' => $this->secret,
+                    'access_token' => $accessToken,
+                ],
+            ]);
+
+            $data = json_decode($response->getBody()->getContents(), true);
+
+            return [
+                'accounts' => $data['accounts'] ?? [],
+                'liabilities' => $data['liabilities'] ?? [],
+            ];
+        } catch (GuzzleException $e) {
+            Log::error('Plaid Get Liabilities Failed', [
+                'error' => $e->getMessage(),
+                'response' => $e->hasResponse() ? $e->getResponse()->getBody()->getContents() : null,
+            ]);
+
+            // Don't throw exception - not all accounts have liability data
+            // Return empty array so calling code can handle gracefully
+            return [
+                'accounts' => [],
+                'liabilities' => [],
+            ];
         }
     }
 }

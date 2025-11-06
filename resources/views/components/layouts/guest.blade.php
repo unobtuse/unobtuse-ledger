@@ -7,6 +7,10 @@
 
     <title>{{ $title ?? config('app.name') }}</title>
 
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('logos/unobtuse-ledger-icon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('logos/unobtuse-ledger-icon.svg') }}">
+
     <!-- Geist Font (Design System) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>

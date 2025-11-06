@@ -40,8 +40,13 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Accounts
     Route::prefix('accounts')->name('accounts.')->group(function () {
         Route::get('/', [AccountController::class, 'index'])->name('index');
+        Route::get('/oauth-callback', [AccountController::class, 'oauthCallback'])->name('oauth-callback');
         Route::post('/link-token', [AccountController::class, 'createLinkToken'])->name('link-token');
         Route::post('/exchange-token', [AccountController::class, 'exchangePublicToken'])->name('exchange-token');
+        Route::post('/{account}/refresh', [AccountController::class, 'refreshBalance'])->name('refresh');
+        Route::post('/{account}/sync', [AccountController::class, 'sync'])->name('sync');
+        Route::patch('/{account}/nickname', [AccountController::class, 'updateNickname'])->name('update-nickname');
+        Route::delete('/{account}', [AccountController::class, 'disconnect'])->name('disconnect');
     });
 
     // Transactions

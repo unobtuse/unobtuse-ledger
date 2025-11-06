@@ -1,7 +1,5 @@
 @if($showCreateModal || $showEditModal)
     <div class="fixed inset-0 z-50 overflow-y-auto" 
-         x-data="{ show: @entangle($showCreateModal ? 'showCreateModal' : 'showEditModal') }"
-         x-show="show"
          x-transition:enter="transition ease-out duration-300"
          x-transition:enter-start="opacity-0"
          x-transition:enter-end="opacity-100"

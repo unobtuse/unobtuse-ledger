@@ -42,6 +42,20 @@ return [
 
     /*
     |--------------------------------------------------------------------------
+    | Webhook Verification
+    |--------------------------------------------------------------------------
+    |
+    | Configuration for verifying Plaid webhook signatures.
+    | CRITICAL: Never disable in production - this ensures webhooks are authentic.
+    |
+    */
+
+    'webhook_verification_enabled' => env('PLAID_WEBHOOK_VERIFICATION_ENABLED', true),
+
+    'webhook_verification_key_url' => env('PLAID_WEBHOOK_VERIFICATION_KEY_URL'),
+
+    /*
+    |--------------------------------------------------------------------------
     | Products
     |--------------------------------------------------------------------------
     |
@@ -50,10 +64,8 @@ return [
     */
 
     'products' => [
-        'auth',           // Account authentication
         'transactions',   // Transaction history
-        'identity',       // Account holder identity
-        'balance',        // Real-time balance
+        'liabilities',   // Liability data (due dates, interest rates, payment amounts)
     ],
 
     /*

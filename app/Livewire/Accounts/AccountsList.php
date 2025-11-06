@@ -1,0 +1,481 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Livewire\Accounts;
+
+use App\Jobs\SyncAccountTransactions;
+use App\Models\Account;
+use App\Services\PlaidService;
+use Illuminate\Contracts\View\View;
+use Illuminate\Database\Eloquent\Builder;
+use Illuminate\Database\Eloquent\Collection;
+use Illuminate\Support\Facades\Log;
+use Livewire\Component;
+
+/**
+ * Accounts List Livewire Component
+ * 
+ * Provides comprehensive account management with filtering, grouping,
+ * card-grid layout, and account actions.
+ */
+class AccountsList extends Component
+{
+    protected PlaidService $plaidService;
+
+    // Filters
+    public string $search = '';
+    public string $typeFilter = 'all'; // 'all', 'checking', 'savings', 'credit_card', 'investment', 'loan', 'other'
+    public string $statusFilter = 'all'; // 'all', 'active', 'syncing', 'failed', 'disabled'
+    public bool $groupByInstitution = false;
+    
+    // Modal states
+    public bool $showNicknameModal = false;
+    public bool $showDisconnectModal = false;
+    public bool $showDueDateModal = false;
+    public ?string $selectedAccountId = null;
+    
+    // Form data
+    public string $nickname = '';
+    public ?string $paymentDueDate = null;
+    public ?int $paymentDueDay = null;
+    public ?string $paymentAmount = null;
+    public ?string $interestRate = null;
+    public ?string $interestRateType = null;
+    
+    // Expanded accounts (for card details)
+    public array $expandedAccounts = [];
+
+    /**
+     * Bootstrap component dependencies.
+     */
+    public function boot(PlaidService $plaidService): void
+    {
+        $this->plaidService = $plaidService;
+    }
+    
+    /**
+     * Toggle account expansion
+     */
+    public function toggleExpand(string $accountId): void
+    {
+        if (in_array($accountId, $this->expandedAccounts)) {
+            $this->expandedAccounts = array_diff($this->expandedAccounts, [$accountId]);
+        } else {
+            $this->expandedAccounts[] = $accountId;
+        }
+    }
+    
+    /**
+     * Check if account is expanded
+     */
+    public function isExpanded(string $accountId): bool
+    {
+        return in_array($accountId, $this->expandedAccounts);
+    }
+    
+    /**
+     * Refresh account balance
+     */
+    public function refreshBalance(string $accountId): void
+    {
+        $account = Account::where('id', $accountId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+        
+        try {
+            $balances = $this->plaidService->getBalance($account->plaid_access_token);
+
+            foreach ($balances as $balance) {
+                if (($balance['account_id'] ?? null) === $account->plaid_account_id) {
+                    $account->update([
+                        'balance' => $balance['balances']['current'] ?? 0,
+                        'available_balance' => $balance['balances']['available'] ?? null,
+                        'credit_limit' => $balance['balances']['limit'] ?? null,
+                        'last_synced_at' => now(),
+                        'sync_status' => 'synced',
+                    ]);
+
+                    session()->flash('success', 'Balance refreshed successfully!');
+                    return;
+                }
+            }
+
+            session()->flash('error', 'Unable to locate balance for this account.');
+        } catch (\Exception $e) {
+            Log::error('Livewire refresh balance failed', [
+                'account_id' => $account->id,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            session()->flash('error', 'Failed to refresh balance.');
+        }
+    }
+    
+    /**
+     * Sync account transactions
+     */
+    public function syncAccount(string $accountId): void
+    {
+        $account = Account::where('id', $accountId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+        
+        try {
+            SyncAccountTransactions::dispatch($account);
+            session()->flash('success', 'Transaction sync started. This may take a few moments.');
+        } catch (\Exception $e) {
+            session()->flash('error', 'Failed to start sync.');
+        }
+    }
+    
+    /**
+     * Open nickname edit modal
+     */
+    public function editNickname(string $accountId): void
+    {
+        $account = Account::where('id', $accountId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+        
+        $this->selectedAccountId = $accountId;
+        $this->nickname = $account->nickname ?? '';
+        $this->showNicknameModal = true;
+    }
+    
+    /**
+     * Save nickname
+     */
+    public function saveNickname(): void
+    {
+        if (!$this->selectedAccountId) {
+            return;
+        }
+        
+        $account = Account::where('id', $this->selectedAccountId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+        
+        try {
+            $account->update([
+                'nickname' => $this->nickname !== '' ? $this->nickname : null,
+            ]);
+
+            session()->flash('success', 'Nickname updated successfully!');
+            $this->closeNicknameModal();
+        } catch (\Exception $e) {
+            Log::error('Livewire nickname update failed', [
+                'account_id' => $account->id,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            session()->flash('error', 'Failed to update nickname.');
+        }
+    }
+    
+    /**
+     * Close nickname modal
+     */
+    public function closeNicknameModal(): void
+    {
+        $this->showNicknameModal = false;
+        $this->selectedAccountId = null;
+        $this->nickname = '';
+    }
+    
+    /**
+     * Open disconnect confirmation modal
+     */
+    public function confirmDisconnect(string $accountId): void
+    {
+        $this->selectedAccountId = $accountId;
+        $this->showDisconnectModal = true;
+    }
+    
+    /**
+     * Disconnect account
+     */
+    public function disconnectAccount(): void
+    {
+        if (!$this->selectedAccountId) {
+            return;
+        }
+        
+        $account = Account::where('id', $this->selectedAccountId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+        
+        try {
+            $this->plaidService->removeItem($account->plaid_access_token);
+
+            $account->update(['is_active' => false]);
+            $account->delete();
+
+            session()->flash('success', 'Account disconnected successfully.');
+            $this->expandedAccounts = array_diff($this->expandedAccounts, [$this->selectedAccountId]);
+            $this->closeDisconnectModal();
+        } catch (\Exception $e) {
+            Log::error('Livewire disconnect account failed', [
+                'account_id' => $account->id,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            session()->flash('error', 'Failed to disconnect account.');
+        }
+    }
+    
+    /**
+     * Close disconnect modal
+     */
+    public function closeDisconnectModal(): void
+    {
+        $this->showDisconnectModal = false;
+        $this->selectedAccountId = null;
+    }
+    
+    /**
+     * Open due date edit modal
+     */
+    public function openEditDueDate(string $accountId): void
+    {
+        $account = Account::where('id', $accountId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+        
+        $this->selectedAccountId = $accountId;
+        $this->paymentDueDate = $account->payment_due_date?->format('Y-m-d');
+        $this->paymentDueDay = $account->payment_due_day;
+        $this->paymentAmount = $account->next_payment_amount ?? $account->minimum_payment_amount 
+            ? number_format((float) ($account->next_payment_amount ?? $account->minimum_payment_amount), 2) 
+            : null;
+        $this->interestRate = $account->interest_rate 
+            ? number_format((float) $account->interest_rate, 2) 
+            : null;
+        $this->interestRateType = $account->interest_rate_type;
+        $this->showDueDateModal = true;
+    }
+    
+    /**
+     * Save due date and liability information
+     */
+    public function saveDueDate(): void
+    {
+        if (!$this->selectedAccountId) {
+            return;
+        }
+        
+        $account = Account::where('id', $this->selectedAccountId)
+            ->where('user_id', auth()->id())
+            ->firstOrFail();
+        
+        $this->validate([
+            'paymentDueDate' => 'nullable|date',
+            'paymentDueDay' => 'nullable|integer|min:1|max:31',
+            'paymentAmount' => 'nullable|numeric|min:0',
+            'interestRate' => 'nullable|numeric|min:0|max:100',
+            'interestRateType' => 'nullable|in:fixed,variable',
+        ]);
+        
+        try {
+            $updateData = [
+                'payment_due_date_source' => 'manual',
+            ];
+            
+            if ($this->paymentDueDate) {
+                $updateData['payment_due_date'] = $this->paymentDueDate;
+            } else {
+                $updateData['payment_due_date'] = null;
+            }
+            
+            if ($this->paymentDueDay) {
+                $updateData['payment_due_day'] = $this->paymentDueDay;
+            } else {
+                $updateData['payment_due_day'] = null;
+            }
+            
+            // Set payment amount based on account type
+            if ($this->paymentAmount !== null && $this->paymentAmount !== '') {
+                if ($account->account_type === 'credit_card') {
+                    $updateData['minimum_payment_amount'] = $this->paymentAmount;
+                } else {
+                    $updateData['next_payment_amount'] = $this->paymentAmount;
+                }
+            }
+            
+            if ($this->interestRate !== null && $this->interestRate !== '') {
+                $updateData['interest_rate'] = $this->interestRate;
+                $updateData['interest_rate_source'] = 'manual';
+                if ($this->interestRateType) {
+                    $updateData['interest_rate_type'] = $this->interestRateType;
+                }
+            }
+            
+            $account->update($updateData);
+
+            session()->flash('success', 'Due date updated successfully!');
+            $this->closeDueDateModal();
+        } catch (\Exception $e) {
+            Log::error('Livewire due date update failed', [
+                'account_id' => $account->id,
+                'user_id' => auth()->id(),
+                'error' => $e->getMessage(),
+            ]);
+
+            session()->flash('error', 'Failed to update due date.');
+        }
+    }
+    
+    /**
+     * Close due date modal
+     */
+    public function closeDueDateModal(): void
+    {
+        $this->showDueDateModal = false;
+        $this->selectedAccountId = null;
+        $this->paymentDueDate = null;
+        $this->paymentDueDay = null;
+        $this->paymentAmount = null;
+        $this->interestRate = null;
+        $this->interestRateType = null;
+    }
+    
+    /**
+     * Toggle institution grouping
+     */
+    public function toggleGrouping(): void
+    {
+        $this->groupByInstitution = !$this->groupByInstitution;
+    }
+    
+    /**
+     * Filter by account type
+     */
+    public function filterByType(string $type): void
+    {
+        $this->typeFilter = $type;
+    }
+    
+    /**
+     * Get accounts query with filters
+     */
+    protected function getAccountsQuery(): Builder
+    {
+        $query = Account::query()
+            ->where('user_id', auth()->id())
+            ->where('is_active', true);
+        
+        // Search filter
+        if ($this->search) {
+            $query->where(function ($q) {
+                $q->where('account_name', 'ilike', '%' . $this->search . '%')
+                  ->orWhere('nickname', 'ilike', '%' . $this->search . '%')
+                  ->orWhere('institution_name', 'ilike', '%' . $this->search . '%')
+                  ->orWhere('mask', 'ilike', '%' . $this->search . '%');
+            });
+        }
+        
+        // Type filter
+        if ($this->typeFilter !== 'all') {
+            $query->where('account_type', $this->typeFilter);
+        }
+        
+        // Status filter
+        if ($this->statusFilter !== 'all') {
+            if ($this->statusFilter === 'active') {
+                $query->where('sync_status', 'synced');
+            } else {
+                $query->where('sync_status', $this->statusFilter);
+            }
+        }
+        
+        // Order by institution name, then account name
+        $query->orderBy('institution_name')
+              ->orderBy('account_name');
+        
+        return $query;
+    }
+    
+    /**
+     * Get filtered accounts
+     */
+    protected function getAccounts(): Collection
+    {
+        return $this->getAccountsQuery()->get();
+    }
+    
+    /**
+     * Get accounts grouped by institution
+     */
+    protected function getGroupedAccounts(): array
+    {
+        $accounts = $this->getAccounts();
+        $grouped = [];
+        
+        foreach ($accounts as $account) {
+            $institution = $account->institution_name ?? 'Other';
+            if (!isset($grouped[$institution])) {
+                $grouped[$institution] = [];
+            }
+            $grouped[$institution][] = $account;
+        }
+        
+        return $grouped;
+    }
+    
+    /**
+     * Get summary statistics
+     */
+    protected function getSummaryStats(): array
+    {
+        $accounts = Account::where('user_id', auth()->id())
+            ->where('is_active', true)
+            ->get();
+        
+        $totalBalance = $accounts->sum('balance');
+        $activeCount = $accounts->where('sync_status', 'synced')->count();
+        $syncingCount = $accounts->where('sync_status', 'syncing')->count();
+        $failedCount = $accounts->where('sync_status', 'failed')->count();
+        
+        $lastSync = $accounts->whereNotNull('last_synced_at')
+            ->max('last_synced_at');
+        
+        return [
+            'total_balance' => $totalBalance,
+            'active_count' => $activeCount,
+            'syncing_count' => $syncingCount,
+            'failed_count' => $failedCount,
+            'total_count' => $accounts->count(),
+            'last_sync' => $lastSync,
+        ];
+    }
+    
+    /**
+     * Get selected account
+     */
+    protected function getSelectedAccount(): ?Account
+    {
+        if (!$this->selectedAccountId) {
+            return null;
+        }
+        
+        return Account::where('id', $this->selectedAccountId)
+            ->where('user_id', auth()->id())
+            ->first();
+    }
+    
+    /**
+     * Render the component
+     */
+    public function render(): View
+    {
+        return view('livewire.accounts.accounts-list', [
+            'accounts' => $this->getAccounts(),
+            'groupedAccounts' => $this->getGroupedAccounts(),
+            'summaryStats' => $this->getSummaryStats(),
+            'selectedAccount' => $this->getSelectedAccount(),
+        ]);
+    }
+}

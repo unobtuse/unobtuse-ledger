@@ -66,6 +66,19 @@
         </div>
     </div>
 
+    <!-- Flash Messages -->
+    @if (session()->has('message'))
+        <div class="bg-chart-2/10 border border-chart-2/30 rounded-lg p-4 mb-4">
+            <p class="text-sm text-chart-2">{{ session('message') }}</p>
+        </div>
+    @endif
+
+    @if (session()->has('error'))
+        <div class="bg-destructive/10 border border-destructive/30 rounded-lg p-4 mb-4">
+            <p class="text-sm text-destructive">{{ session('error') }}</p>
+        </div>
+    @endif
+
     <!-- Filters and Search -->
     <div class="bg-card border border-border rounded-lg shadow-sm p-6">
         <div class="flex flex-col lg:flex-row lg:items-center lg:justify-between gap-4 mb-6">
@@ -75,8 +88,16 @@
                         class="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-card-foreground border border-border rounded-lg hover:bg-muted transition-colors">
                     Reset Filters
                 </button>
-                <button class="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all duration-150">
+                <button wire:click="exportAll" 
+                        class="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all duration-150">
                     Export CSV
+                </button>
+                <button wire:click="$set('showCreateTransactionModal', true)"
+                        class="px-4 py-2 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all duration-150 flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Add Transaction
                 </button>
             </div>
         </div>
@@ -95,11 +116,12 @@
         </div>
 
         <!-- Filters Row -->
-        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
+        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
             <div>
                 <label class="block text-sm font-medium text-muted-foreground mb-1">Account</label>
                 <select wire:model.live="accountFilter" 
-                        class="w-full px-3 py-2 bg-background border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                        wire:loading.attr="disabled"
+                        class="w-full px-3 py-2 bg-background border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring disabled:opacity-50">
                     <option value="">All Accounts</option>
                     @foreach($accounts as $account)
                         <option value="{{ $account->id }}">{{ $account->account_name }}</option>
@@ -125,6 +147,16 @@
                     <option value="">All Types</option>
                     <option value="debit">Expenses (Debit)</option>
                     <option value="credit">Income (Credit)</option>
+                </select>
+            </div>
+
+            <div>
+                <label class="block text-sm font-medium text-muted-foreground mb-1">Recurring</label>
+                <select wire:model.live="recurringFilter" 
+                        class="w-full px-3 py-2 bg-background border border-input rounded-lg text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                    <option value="">All</option>
+                    <option value="recurring">Recurring Only</option>
+                    <option value="one-time">One-Time Only</option>
                 </select>
             </div>
 
@@ -158,17 +190,57 @@
         </div>
     </div>
 
+    <!-- Bulk Actions Bar -->
+    @if(count($selectedTransactions) > 0)
+        <div class="bg-primary/10 border border-primary/30 rounded-lg p-4 flex items-center justify-between">
+            <div class="flex items-center gap-4">
+                <span class="text-sm font-medium text-card-foreground">
+                    {{ count($selectedTransactions) }} transaction(s) selected
+                </span>
+                <div class="flex items-center gap-2">
+                    <button wire:click="openBulkCategoryModal"
+                            class="px-3 py-1.5 text-sm font-medium bg-primary text-primary-foreground rounded-lg hover:opacity-90 transition-all duration-150">
+                        Categorize
+                    </button>
+                    <button wire:click="bulkDelete" 
+                            wire:confirm="Are you sure you want to delete {{ count($selectedTransactions) }} transaction(s)?"
+                            wire:loading.attr="disabled"
+                            class="px-3 py-1.5 text-sm font-medium bg-destructive text-destructive-foreground rounded-lg hover:opacity-90 transition-all duration-150 disabled:opacity-50">
+                        <span wire:loading.remove>Delete</span>
+                        <span wire:loading>Deleting...</span>
+                    </button>
+                    <button wire:click="exportSelected"
+                            wire:loading.attr="disabled"
+                            class="px-3 py-1.5 text-sm font-medium border border-border rounded-lg hover:bg-muted transition-colors disabled:opacity-50">
+                        <span wire:loading.remove>Export Selected</span>
+                        <span wire:loading>Exporting...</span>
+                    </button>
+                </div>
+            </div>
+            <button wire:click="clearSelection" 
+                    class="text-sm text-muted-foreground hover:text-card-foreground transition-colors">
+                Clear Selection
+            </button>
+        </div>
+    @endif
+
     <!-- Transactions Table -->
     <div class="bg-card border border-border rounded-lg shadow-sm overflow-hidden">
         <div class="overflow-x-auto">
             <table class="w-full">
                 <thead class="bg-muted border-b border-border">
                     <tr>
-                        <th wire:click="sortBy('date')" 
+                        <th class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider">
+                            <input type="checkbox" 
+                                   wire:model="selectAll"
+                                   wire:change="toggleSelectAll"
+                                   class="w-4 h-4 text-primary bg-background border-input rounded focus:ring-ring">
+                        </th>
+                        <th wire:click="sortBy('transaction_date')" 
                             class="px-6 py-3 text-left text-xs font-medium text-muted-foreground uppercase tracking-wider cursor-pointer hover:text-card-foreground transition-colors">
                             <div class="flex items-center gap-2">
                                 Date
-                                @if($sortField === 'date')
+                                @if($sortField === 'transaction_date')
                                     <svg class="w-4 h-4 {{ $sortDirection === 'asc' ? 'rotate-180' : '' }}" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />
                                     </svg>
@@ -210,22 +282,46 @@
                 </thead>
                 <tbody class="divide-y divide-border">
                     @forelse($transactions as $transaction)
-                        <tr class="hover:bg-muted transition-colors cursor-pointer" 
-                            wire:click="showDetails({{ $transaction->id }})">
+                        <tr class="hover:bg-muted transition-colors {{ in_array($transaction->id, $selectedTransactions) ? 'bg-primary/5' : '' }}" 
+                            wire:click="showDetails('{{ $transaction->id }}')">
+                            <td class="px-6 py-4 whitespace-nowrap" wire:click.stop="toggleSelection('{{ $transaction->id }}')">
+                                <input type="checkbox" 
+                                       {{ in_array($transaction->id, $selectedTransactions) ? 'checked' : '' }}
+                                       wire:click.stop="toggleSelection('{{ $transaction->id }}')"
+                                       class="w-4 h-4 text-primary bg-background border-input rounded focus:ring-ring cursor-pointer">
+                            </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm text-card-foreground">
-                                {{ \Carbon\Carbon::parse($transaction->date)->format('M d, Y') }}
+                                {{ $transaction->transaction_date->format('M d, Y') }}
                             </td>
                             <td class="px-6 py-4 text-sm">
-                                <div class="font-medium text-card-foreground">{{ $transaction->merchant_name ?? $transaction->name }}</div>
-                                @if($transaction->name && $transaction->merchant_name)
-                                    <div class="text-xs text-muted-foreground">{{ $transaction->name }}</div>
-                                @endif
+                                <div class="flex items-center gap-2">
+                                    <div>
+                                        <div class="font-medium text-card-foreground">{{ $transaction->merchant_name ?? $transaction->name }}</div>
+                                        @if($transaction->name && $transaction->merchant_name)
+                                            <div class="text-xs text-muted-foreground">{{ $transaction->name }}</div>
+                                        @endif
+                                    </div>
+                                    @if($transaction->is_recurring)
+                                        <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-chart-4/20 text-chart-4" title="Recurring: {{ $transaction->recurring_frequency ?? 'Yes' }}">
+                                            <svg class="w-3 h-3 mr-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                            </svg>
+                                            {{ ucfirst($transaction->recurring_frequency ?? 'Recurring') }}
+                                        </span>
+                                    @endif
+                                </div>
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-sm">
-                                @if($transaction->categories && count($transaction->categories) > 0)
+                                @php
+                                    $displayCategories = $transaction->categories;
+                                @endphp
+                                @if(count($displayCategories) > 0)
                                     <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-chart-1/20 text-chart-1">
-                                        {{ $transaction->categories[0] }}
+                                        {{ $displayCategories[0] }}
                                     </span>
+                                    @if(count($displayCategories) > 1)
+                                        <span class="text-xs text-muted-foreground ml-1">+{{ count($displayCategories) - 1 }}</span>
+                                    @endif
                                 @else
                                     <span class="text-muted-foreground text-xs">Uncategorized</span>
                                 @endif
@@ -237,18 +333,26 @@
                                 {{ $transaction->amount > 0 ? '+' : '' }}${{ number_format(abs($transaction->amount), 2) }}
                             </td>
                             <td class="px-6 py-4 whitespace-nowrap text-center text-sm">
-                                <button wire:click.stop="showDetails({{ $transaction->id }})" 
-                                        class="text-primary hover:text-primary/80 transition-colors">
-                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
-                                    </svg>
-                                </button>
+                                <div class="flex items-center justify-center gap-2">
+                                    <button wire:click.stop="openCategoryModal('{{ $transaction->id }}')" 
+                                            class="text-primary hover:text-primary/80 transition-colors" title="Edit Category">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                        </svg>
+                                    </button>
+                                    <button wire:click.stop="showDetails('{{ $transaction->id }}')" 
+                                            class="text-primary hover:text-primary/80 transition-colors" title="View Details">
+                                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                        </svg>
+                                    </button>
+                                </div>
                             </td>
                         </tr>
                     @empty
                         <tr>
-                            <td colspan="6" class="px-6 py-12 text-center">
+                            <td colspan="7" class="px-6 py-12 text-center">
                                 <svg class="mx-auto h-12 w-12 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
                                 </svg>
@@ -319,7 +423,7 @@
                             <div class="text-right">
                                 <p class="text-sm text-muted-foreground">Date</p>
                                 <p class="text-lg font-medium text-card-foreground">
-                                    {{ \Carbon\Carbon::parse($selectedTransaction->date)->format('M d, Y') }}
+                                    {{ $selectedTransaction->transaction_date->format('M d, Y') }}
                                 </p>
                             </div>
                         </div>
@@ -339,11 +443,14 @@
                             <p class="text-base text-card-foreground">{{ $selectedTransaction->account->account_name ?? 'N/A' }}</p>
                         </div>
 
-                        @if($selectedTransaction->categories && count($selectedTransaction->categories) > 0)
+                        @php
+                            $displayCategories = $selectedTransaction->categories;
+                        @endphp
+                        @if(count($displayCategories) > 0)
                             <div>
                                 <p class="text-sm font-medium text-muted-foreground mb-2">Categories</p>
                                 <div class="flex flex-wrap gap-2">
-                                    @foreach($selectedTransaction->categories as $category)
+                                    @foreach($displayCategories as $category)
                                         <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-medium bg-chart-1/20 text-chart-1">
                                             {{ $category }}
                                         </span>
@@ -352,10 +459,19 @@
                             </div>
                         @endif
 
+                        @if($selectedTransaction->is_recurring)
+                            <div>
+                                <p class="text-sm font-medium text-muted-foreground mb-1">Recurring</p>
+                                <p class="text-sm text-card-foreground">
+                                    Yes - {{ ucfirst($selectedTransaction->recurring_frequency ?? 'Recurring') }}
+                                </p>
+                            </div>
+                        @endif
+
                         <div class="grid grid-cols-2 gap-4">
                             <div>
                                 <p class="text-sm font-medium text-muted-foreground mb-1">Transaction ID</p>
-                                <p class="text-sm text-card-foreground font-mono">{{ $selectedTransaction->transaction_id }}</p>
+                                <p class="text-sm text-card-foreground font-mono">{{ $selectedTransaction->id }}</p>
                             </div>
                             <div>
                                 <p class="text-sm font-medium text-muted-foreground mb-1">Pending</p>
@@ -374,6 +490,19 @@
                 </div>
             </div>
         </div>
+    @endif
+
+    <!-- Edit Category Modal -->
+    @if($showEditCategoryModal)
+        @livewire('transactions.edit-category', [
+            'transactionId' => $selectedTransactionId,
+            'transactionIds' => $selectedTransactions
+        ], key('edit-category-' . now()->timestamp))
+    @endif
+
+    <!-- Create Transaction Modal -->
+    @if($showCreateTransactionModal)
+        @livewire('transactions.create-transaction', key('create-transaction-' . now()->timestamp))
     @endif
 </div>
 

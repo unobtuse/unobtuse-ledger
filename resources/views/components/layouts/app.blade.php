@@ -7,6 +7,10 @@
 
     <title>{{ $title ?? config('app.name') }}</title>
 
+    <!-- Favicons -->
+    <link rel="icon" type="image/svg+xml" href="{{ asset('logos/unobtuse-ledger-icon.svg') }}">
+    <link rel="apple-touch-icon" href="{{ asset('logos/unobtuse-ledger-icon.svg') }}">
+
     <!-- Geist Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -36,9 +40,10 @@
             <div class="flex flex-col h-full">
                 <!-- Logo -->
                 <div class="flex items-center justify-between h-16 px-6 border-b border-sidebar-border">
-                    <h1 class="text-xl font-semibold text-sidebar-foreground">
-                        {{ config('app.name') }}
-                    </h1>
+                    <div class="flex items-center">
+                        <img src="{{ asset('logos/unobtuse-ledger-black-logo.svg') }}" alt="{{ config('app.name') }}" class="h-8 dark:hidden">
+                        <img src="{{ asset('logos/unobtuse-ledger-white-logo.svg') }}" alt="{{ config('app.name') }}" class="h-8 hidden dark:block">
+                    </div>
                     <button @click="sidebarOpen = false" class="lg:hidden text-sidebar-foreground hover:text-sidebar-primary">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
@@ -170,7 +175,10 @@
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />
                     </svg>
                 </button>
-                <h2 class="ml-4 text-lg font-semibold text-foreground">{{ $pageTitle ?? 'Dashboard' }}</h2>
+                <div class="ml-4 flex items-center">
+                    <img src="{{ asset('logos/unobtuse-ledger-black-logo.svg') }}" alt="{{ config('app.name') }}" class="h-6 dark:hidden">
+                    <img src="{{ asset('logos/unobtuse-ledger-white-logo.svg') }}" alt="{{ config('app.name') }}" class="h-6 hidden dark:block">
+                </div>
             </div>
 
             <!-- Page Content -->
