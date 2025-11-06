@@ -12,7 +12,7 @@
 [![Tailwind CSS](https://img.shields.io/badge/Tailwind-4.1+-38B2AC?style=for-the-badge&logo=tailwind-css&logoColor=white)](https://tailwindcss.com)
 [![License](https://img.shields.io/badge/License-MIT-green?style=for-the-badge)](LICENSE)
 
-[Features](#-features) • [Quick Start](#-quick-start) • [Documentation](#-documentation) • [Roadmap](#-roadmap) • [Contributing](#-contributing)
+[Features](#-features) • [Quick Start](#-quick-start) • [Roadmap](#-roadmap) • [Contributing](#-contributing)
 
 </div>
 
@@ -363,9 +363,7 @@ This project is licensed under the **MIT License** - see the [LICENSE](LICENSE) 
 ## 🤝 Support & Community
 
 - 💬 **Discord:** [Join our community](https://discord.gg/unobtuse)
-- 🐦 **Twitter:** [@UnobtuseLedger](https://twitter.com/unobtuseLedger)
 - 📧 **Email:** support@unobtuse.com
-- 📖 **Documentation:** [docs.unobtuse.com](https://docs.unobtuse.com)
 - 🐛 **Bug Reports:** [GitHub Issues](https://github.com/yourusername/unobtuse-ledger/issues)
 
 ---
@@ -423,7 +421,7 @@ If you find Unobtuse Ledger helpful, please consider giving us a star! ⭐
 
 **Made with ❤️ for people who deserve financial peace of mind**
 
-[Website](https://unobtuse.com) • [Documentation](https://docs.unobtuse.com) • [Twitter](https://twitter.com/UnobtuseLedger)
+[Website](https://unobtuse.com)
 
 © 2025 Unobtuse Ledger. All rights reserved.
 
