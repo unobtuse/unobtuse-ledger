@@ -431,16 +431,3 @@ If you find Unobtuse Ledger helpful, please consider giving us a star! ⭐
 
 ---
 
-## 📝 GitHub Repository Settings
-
-### Setting the Project Icon
-
-To use the Unobtuse Ledger icon (`logos/unobtuse-ledger-icon.svg`) as your repository's social preview image:
-
-1. Go to your repository on GitHub
-2. Click **Settings** → **General**
-3. Scroll to **Social preview**
-4. Click **Edit** and upload `/var/www/html/ledger/logos/unobtuse-ledger-icon.svg`
-5. This will display as the thumbnail when sharing the repository
-
-Alternatively, you can convert the SVG to PNG (recommended size: 1280x640px) for better social media compatibility.
