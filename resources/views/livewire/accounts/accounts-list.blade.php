@@ -1,4 +1,7 @@
-<div class="space-y-6" x-data="{ plaidHandler: null }">
+<div class="space-y-6">
+    <!-- Teller Connect Component -->
+    <livewire:accounts.teller-connect />
+
     <!-- Flash Messages -->
     @if (session()->has('success'))
         <div x-data="{ show: true }" 
@@ -63,7 +66,7 @@
                 <p class="text-sm font-medium text-muted-foreground">Total Accounts</p>
                 <p class="text-3xl font-semibold text-card-foreground mt-1">{{ $summaryStats['total_count'] }}</p>
             </div>
-            <button onclick="linkAccount()" 
+            <button @click="$dispatch('teller:initiate')"
                     class="mt-4 w-full inline-flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius-md)] font-semibold text-sm hover:opacity-90 transition-all duration-150">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -147,7 +150,7 @@
             </p>
             @if(!$search && $typeFilter === 'all' && $statusFilter === 'all')
                 <div class="mt-6">
-                    <button onclick="linkAccount()" 
+                    <button @click="$dispatch('teller:initiate')" 
                             class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius-md)] font-semibold text-sm hover:opacity-90 transition-all duration-150">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -316,190 +319,32 @@
     @endif
 </div>
 
-<!-- Plaid Link Script -->
-<script src="https://cdn.plaid.com/link/v2/stable/link-initialize.js"></script>
+<!-- Teller Connect Script -->
+<script src="https://cdn.teller.io/sdk/v1/connect.js"></script>
 <script>
-    // Check if we're returning from OAuth redirect
-    // Plaid may redirect to its own OAuth page or our callback
-    const urlParams = new URLSearchParams(window.location.search);
-    const hashParams = new URLSearchParams(window.location.hash.substring(1));
-    
-    // Check both query params and hash for OAuth state
-    const oauthStateId = urlParams.get('oauth_state_id') || hashParams.get('oauth_state_id');
-    const oauthError = urlParams.get('error') || hashParams.get('error');
-    const oauthCode = hashParams.get('code'); // OAuth code is in hash
-    
-    // If we're on Plaid's OAuth page, extract state from hash and redirect to our callback
-    if (window.location.hostname === 'cdn.plaid.com' && oauthCode) {
-        // Extract state from hash
-        const stateParam = hashParams.get('state');
-        if (stateParam) {
-            try {
-                // State is base64 encoded JSON
-                const stateData = JSON.parse(atob(stateParam));
-                const oauthStateIdFromState = stateData.oauth_state_id;
-                
-                // Redirect to our callback with the OAuth state ID
-                const callbackUrl = '{{ route('accounts.oauth-callback') }}?oauth_state_id=' + encodeURIComponent(oauthStateIdFromState);
-                window.location.href = callbackUrl;
-            } catch (e) {
-                console.error('Failed to parse OAuth state:', e);
-                // Fallback: redirect to accounts page
-                window.location.href = '{{ route('accounts.index') }}';
-            }
-        } else {
-            window.location.href = '{{ route('accounts.index') }}';
+    // Listen for Teller Connect initiation
+    document.addEventListener('teller:initiate', () => {
+        // Find the TellerConnect Livewire component and dispatch the init action
+        const component = document.querySelector('[wire\\:id]');
+        if (component) {
+            // Dispatch Livewire action to initiate Teller Connect
+            Livewire.dispatch('initiateTellerConnect');
         }
-    }
+    });
     
-    // If we have OAuth state on our domain, we need to complete the OAuth flow
-    if (oauthStateId && !oauthError && window.location.hostname !== 'cdn.plaid.com') {
-        // Get the stored link token from sessionStorage
-        const storedLinkToken = sessionStorage.getItem('plaid_link_token');
-        
-        if (storedLinkToken) {
-            // Reinitialize Plaid Link with the stored token to complete OAuth
-            const plaidHandler = Plaid.create({
-                token: storedLinkToken,
-                receivedRedirectUri: window.location.href, // Pass the current URL with OAuth params
-                onSuccess: async function(public_token, metadata) {
-                    // Clear stored token
-                    sessionStorage.removeItem('plaid_link_token');
-                    
-                    // Exchange public token for access token
-                    try {
-                        const exchangeResponse = await fetch('{{ route('accounts.exchange-token') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                public_token: public_token,
-                                metadata: metadata
-                            })
-                        });
-
-                        const exchangeData = await exchangeResponse.json();
-
-                        if (!exchangeResponse.ok) {
-                            throw new Error(exchangeData.error || 'Failed to link account');
-                        }
-
-                        // Success! Reload page to show new account and clean URL
-                        window.location.href = '{{ route('accounts.index') }}';
-                    } catch (error) {
-                        console.error('Token exchange error:', error);
-                        alert('Failed to link account: ' + error.message);
-                        window.location.href = '{{ route('accounts.index') }}';
-                    }
-                },
-                onExit: function(err, metadata) {
-                    // Clear stored token
-                    sessionStorage.removeItem('plaid_link_token');
-                    
-                    // Clean URL and redirect
-                    window.location.href = '{{ route('accounts.index') }}';
-                    
-                    if (err != null) {
-                        console.error('Plaid Link error:', err);
-                        alert('An error occurred: ' + err.error_message);
-                    }
-                },
-                onEvent: function(eventName, metadata) {
-                    console.log('Plaid event:', eventName, metadata);
-                }
-            });
-
-            // Open Plaid Link to complete OAuth flow
-            plaidHandler.open();
-        } else {
-            // No stored token, redirect to accounts page
-            window.location.href = '{{ route('accounts.index') }}';
+    // Listen for Teller enrollment success (fired by TellerConnect component)
+    document.addEventListener('tellerEnrollmentSuccess', (event) => {
+        const enrollmentToken = event.detail?.enrollmentToken;
+        if (enrollmentToken && typeof Livewire !== 'undefined') {
+            Livewire.dispatch('tellerEnrollmentSuccess', { enrollmentToken });
         }
-    }
+    });
     
-    async function linkAccount() {
-        try {
-            // Get link token from backend
-            const response = await fetch('{{ route('accounts.link-token') }}', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                }
-            });
-
-            const data = await response.json();
-
-            if (!response.ok || data.error) {
-                throw new Error(data.error || 'Failed to initialize Plaid');
-            }
-
-            // Store link token in sessionStorage for OAuth redirect handling
-            sessionStorage.setItem('plaid_link_token', data.link_token);
-
-            // Initialize Plaid Link
-            const plaidHandler = Plaid.create({
-                token: data.link_token,
-                onSuccess: async function(public_token, metadata) {
-                    // Clear stored token
-                    sessionStorage.removeItem('plaid_link_token');
-                    
-                    // Exchange public token for access token
-                    try {
-                        const exchangeResponse = await fetch('{{ route('accounts.exchange-token') }}', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json',
-                                'X-CSRF-TOKEN': '{{ csrf_token() }}'
-                            },
-                            body: JSON.stringify({
-                                public_token: public_token,
-                                metadata: metadata
-                            })
-                        });
-
-                        const exchangeData = await exchangeResponse.json();
-
-                        if (!exchangeResponse.ok) {
-                            throw new Error(exchangeData.error || 'Failed to link account');
-                        }
-
-                        // Success! Reload page to show new account
-                        window.location.reload();
-                    } catch (error) {
-                        console.error('Token exchange error:', error);
-                        alert('Failed to link account: ' + error.message);
-                    }
-                },
-                onExit: function(err, metadata) {
-                    // Clear stored token
-                    sessionStorage.removeItem('plaid_link_token');
-                    
-                    if (err != null) {
-                        console.error('Plaid Link error:', err);
-                        alert('An error occurred: ' + err.error_message);
-                    }
-                },
-                onEvent: function(eventName, metadata) {
-                    console.log('Plaid event:', eventName, metadata);
-                    
-                    // If OAuth flow is initiated, store the link token
-                    if (eventName === 'TRANSITION_VIEW' && metadata.view_name === 'OAUTH') {
-                        // Token is already stored, but ensure it's there
-                        sessionStorage.setItem('plaid_link_token', data.link_token);
-                    }
-                }
-            });
-
-            // Open Plaid Link
-            plaidHandler.open();
-
-        } catch (error) {
-            console.error('Plaid Link initialization error:', error);
-            alert('Failed to start account linking: ' + error.message);
-            sessionStorage.removeItem('plaid_link_token');
+    // Listen for Teller errors
+    document.addEventListener('tellerEnrollmentError', (event) => {
+        const { errorCode, errorMessage } = event.detail || {};
+        if (typeof Livewire !== 'undefined') {
+            Livewire.dispatch('tellerEnrollmentError', { errorCode, errorMessage });
         }
-    }
+    });
 </script>

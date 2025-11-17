@@ -36,6 +36,7 @@ class TellerConnect extends Component
     /**
      * Initialize Teller Connect widget
      */
+    #[\Livewire\Attributes\On('initiateTellerConnect')]
     public function initiateTellerConnect(): void
     {
         try {

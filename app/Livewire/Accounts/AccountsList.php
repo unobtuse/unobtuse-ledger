@@ -4,9 +4,9 @@ declare(strict_types=1);
 
 namespace App\Livewire\Accounts;
 
-use App\Jobs\SyncAccountTransactions;
+use App\Jobs\SyncTellerTransactions;
 use App\Models\Account;
-use App\Services\PlaidService;
+use App\Services\TellerService;
 use Illuminate\Contracts\View\View;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
@@ -21,7 +21,7 @@ use Livewire\Component;
  */
 class AccountsList extends Component
 {
-    protected PlaidService $plaidService;
+    protected TellerService $tellerService;
 
     // Filters
     public string $search = '';
@@ -49,9 +49,9 @@ class AccountsList extends Component
     /**
      * Bootstrap component dependencies.
      */
-    public function boot(PlaidService $plaidService): void
+    public function boot(TellerService $tellerService): void
     {
-        $this->plaidService = $plaidService;
+        $this->tellerService = $tellerService;
     }
     
     /**
@@ -84,24 +84,22 @@ class AccountsList extends Component
             ->firstOrFail();
         
         try {
-            $balances = $this->plaidService->getBalance($account->plaid_access_token);
+            // Get balance from Teller
+            $result = $this->tellerService->getBalance($account->teller_token, $account->teller_account_id);
 
-            foreach ($balances as $balance) {
-                if (($balance['account_id'] ?? null) === $account->plaid_account_id) {
-                    $account->update([
-                        'balance' => $balance['balances']['current'] ?? 0,
-                        'available_balance' => $balance['balances']['available'] ?? null,
-                        'credit_limit' => $balance['balances']['limit'] ?? null,
-                        'last_synced_at' => now(),
-                        'sync_status' => 'synced',
-                    ]);
-
-                    session()->flash('success', 'Balance refreshed successfully!');
-                    return;
-                }
+            if (!$result['success']) {
+                throw new \Exception($result['error'] ?? 'Failed to fetch balance');
             }
 
-            session()->flash('error', 'Unable to locate balance for this account.');
+            $balance = $result['balance'];
+            $account->update([
+                'balance' => $balance['available'] ?? 0,
+                'available_balance' => $balance['available'] ?? null,
+                'last_synced_at' => now(),
+                'sync_status' => 'synced',
+            ]);
+
+            session()->flash('success', 'Balance refreshed successfully!');
         } catch (\Exception $e) {
             Log::error('Livewire refresh balance failed', [
                 'account_id' => $account->id,
@@ -109,7 +107,7 @@ class AccountsList extends Component
                 'error' => $e->getMessage(),
             ]);
 
-            session()->flash('error', 'Failed to refresh balance.');
+            session()->flash('error', 'Failed to refresh balance: ' . $e->getMessage());
         }
     }
     
@@ -123,7 +121,7 @@ class AccountsList extends Component
             ->firstOrFail();
         
         try {
-            SyncAccountTransactions::dispatch($account);
+            SyncTellerTransactions::dispatch($account);
             session()->flash('success', 'Transaction sync started. This may take a few moments.');
         } catch (\Exception $e) {
             session()->flash('error', 'Failed to start sync.');
