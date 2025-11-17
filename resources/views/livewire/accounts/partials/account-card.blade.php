@@ -205,7 +205,7 @@
                     <div class="bg-muted/30 rounded-[var(--radius-md)] p-3">
                         <p class="text-xs font-medium text-muted-foreground mb-1">Available Credit</p>
                         <p class="text-lg font-semibold text-card-foreground">
-                            {{ $account->currency }} {{ number_format((float) $account->available_balance, 2) }}
+                            ${{ number_format((float) $account->available_balance, 2) }}
                 </p>
                     </div>
             @endif
@@ -213,7 +213,7 @@
                     <div class="bg-muted/30 rounded-[var(--radius-md)] p-3">
                         <p class="text-xs font-medium text-muted-foreground mb-1">Credit Limit</p>
                         <p class="text-lg font-semibold text-card-foreground">
-                            {{ $account->currency }} {{ number_format((float) $account->credit_limit, 2) }}
+                            ${{ number_format((float) $account->credit_limit, 2) }}
                 </p>
                     </div>
             @endif
@@ -229,7 +229,7 @@
                     <div class="bg-muted/30 rounded-[var(--radius-md)] p-3">
                         <p class="text-xs font-medium text-muted-foreground mb-1">Min. Payment</p>
                         <p class="text-lg font-semibold text-card-foreground">
-                                        {{ $account->currency }} {{ number_format((float) ($account->next_payment_amount ?? $account->minimum_payment_amount), 2) }}
+                                        ${{ number_format((float) ($account->next_payment_amount ?? $account->minimum_payment_amount), 2) }}
                         </p>
                     </div>
                                 @endif
