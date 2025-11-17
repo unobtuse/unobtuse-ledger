@@ -213,6 +213,13 @@
                                 <input type="text" wire:model="currency" maxlength="3"
                                        class="w-full px-4 py-2 bg-background border border-input rounded-[var(--radius-sm)] text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
                             </div>
+                            <div>
+                                <label class="block text-sm font-medium text-card-foreground mb-2">Initial Loan Amount <span class="text-xs text-muted-foreground">(optional)</span></label>
+                                <input type="number" step="0.01" wire:model="initialLoanAmount" placeholder="Original loan amount"
+                                       class="w-full px-4 py-2 bg-background border border-input rounded-[var(--radius-sm)] text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                                       onfocus="if(this.value == '0') this.value = ''">
+                                <p class="text-xs text-muted-foreground mt-1">For loans only. Enter original loan amount to track paydown progress.</p>
+                            </div>
                         </div>
                     </div>
 

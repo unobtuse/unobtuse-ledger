@@ -472,6 +472,7 @@ class ManualAccountUpload extends Component
                 'balance' => $this->endingBalance,
                 'available_balance' => ($this->availableBalance > 0 && $this->availableBalance != $this->endingBalance) ? $this->availableBalance : null,
                 'credit_limit' => $this->creditLimit > 0 ? $this->creditLimit : null,
+                'initial_loan_amount' => $this->initialLoanAmount > 0 ? $this->initialLoanAmount : null,
                 'currency' => $this->currency,
                 'sync_status' => 'synced',
                 'last_synced_at' => now(),

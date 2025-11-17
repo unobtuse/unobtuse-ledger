@@ -49,6 +49,7 @@ class Account extends Model
         'balance',
         'available_balance',
         'credit_limit',
+        'initial_loan_amount',
         'currency',
         'mask',
         'account_number',
