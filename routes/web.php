@@ -60,6 +60,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Fees
     Route::get('/fees', \App\Livewire\Fees\FeesList::class)->name('fees.index');
 
+    // Interest
+    Route::get('/interest', \App\Livewire\Interest\InterestChargesList::class)->name('interest.index');
+
     // Bills
     Route::prefix('bills')->name('bills.')->group(function () {
         Route::get('/', [BillsController::class, 'index'])->name('index');
