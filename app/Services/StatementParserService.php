@@ -11,17 +11,20 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Statement Parser Service
  * 
- * Uses AI vision (OpenAI GPT-4 Vision) to parse bank statements from PDFs or images
+ * Uses AI vision (Google Gemini 1.5 Flash) to parse bank statements from PDFs or images
  * and extract account information and transactions.
+ * 
+ * FREE TIER: 1,500 requests per day with Gemini 1.5 Flash
  */
 class StatementParserService
 {
     protected string $apiKey;
-    protected string $model = 'gpt-4o'; // GPT-4 with vision capabilities
+    protected string $model = 'gemini-1.5-flash'; // Free tier with vision
+    protected string $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
     
     public function __construct()
     {
-        $this->apiKey = config('services.openai.api_key');
+        $this->apiKey = config('services.google.gemini_api_key');
     }
     
     /**
@@ -44,39 +47,35 @@ class StatementParserService
             // Create the prompt for AI
             $prompt = $this->buildParsingPrompt();
             
-            // Call OpenAI Vision API
-            $response = Http::withHeaders([
-                'Authorization' => 'Bearer ' . $this->apiKey,
-                'Content-Type' => 'application/json',
-            ])->timeout(120)->post('https://api.openai.com/v1/chat/completions', [
-                'model' => $this->model,
-                'messages' => [
+            // Call Google Gemini API
+            $url = "{$this->apiUrl}/{$this->model}:generateContent?key={$this->apiKey}";
+            
+            $response = Http::timeout(120)->post($url, [
+                'contents' => [
                     [
-                        'role' => 'system',
-                        'content' => 'You are a financial document parser that extracts account information and transaction details from bank statements with perfect accuracy.'
-                    ],
-                    [
-                        'role' => 'user',
-                        'content' => [
+                        'parts' => [
                             [
-                                'type' => 'text',
                                 'text' => $prompt
                             ],
                             [
-                                'type' => 'image_url',
-                                'image_url' => [
-                                    'url' => "data:{$mimeType};base64,{$base64Content}"
+                                'inline_data' => [
+                                    'mime_type' => $mimeType,
+                                    'data' => $base64Content
                                 ]
                             ]
                         ]
                     ]
                 ],
-                'max_tokens' => 4096,
-                'temperature' => 0.1, // Low temperature for accuracy
+                'generationConfig' => [
+                    'temperature' => 0.1,
+                    'topK' => 1,
+                    'topP' => 1,
+                    'maxOutputTokens' => 4096,
+                ]
             ]);
             
             if (!$response->successful()) {
-                Log::error('OpenAI API request failed', [
+                Log::error('Google Gemini API request failed', [
                     'status' => $response->status(),
                     'body' => $response->body()
                 ]);
@@ -88,7 +87,7 @@ class StatementParserService
             }
             
             $result = $response->json();
-            $content = $result['choices'][0]['message']['content'] ?? null;
+            $content = $result['candidates'][0]['content']['parts'][0]['text'] ?? null;
             
             if (!$content) {
                 return [
