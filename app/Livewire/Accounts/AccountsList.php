@@ -440,6 +440,45 @@ class AccountsList extends Component
         $this->selectedAccountId = null;
         $this->websiteUrl = '';
     }
+
+    /**
+     * Open initial loan amount modal
+     */
+    public function openInitialLoanAmountModal(string $accountId): void
+    {
+        $account = Account::findOrFail($accountId);
+        $this->selectedAccountId = $accountId;
+        $this->initialLoanAmount = $account->initial_loan_amount ?? 0;
+        $this->showInitialLoanAmountModal = true;
+    }
+
+    /**
+     * Save initial loan amount
+     */
+    public function saveInitialLoanAmount(): void
+    {
+        $this->validate([
+            'initialLoanAmount' => 'required|numeric|min:0',
+        ]);
+
+        $account = Account::findOrFail($this->selectedAccountId);
+        $account->update([
+            'initial_loan_amount' => $this->initialLoanAmount > 0 ? $this->initialLoanAmount : null,
+        ]);
+
+        $this->closeInitialLoanAmountModal();
+        $this->dispatch('account-updated');
+    }
+
+    /**
+     * Close initial loan amount modal
+     */
+    public function closeInitialLoanAmountModal(): void
+    {
+        $this->showInitialLoanAmountModal = false;
+        $this->selectedAccountId = null;
+        $this->initialLoanAmount = 0;
+    }
     
     /**
      * Toggle institution grouping
