@@ -248,6 +248,9 @@ class ManualAccountUpload extends Component
                 }
             }
             
+            // Cross-reference loan payments with other accounts (Option 3: Smart Detection)
+            $this->crossReferenceLoanPayments();
+            
             // Pre-fill form fields (only if not updating existing account)
             if (!$this->existingAccountId) {
                 $this->institutionName = $this->parsedAccount['institution_name'] ?? '';
