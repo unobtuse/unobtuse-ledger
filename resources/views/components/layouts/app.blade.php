@@ -49,13 +49,13 @@
                 <div class="flex items-center justify-between h-16 px-6 border-b border-sidebar-border">
                     <div class="flex items-center">
                         <!-- Desktop Light Mode: Combo Icon Text -->
-                        <img src="{{ asset('logos/Unobtuse-Ledger-Combo-Icon-Text-Light-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-8 hidden lg:block dark:lg:hidden">
+                        <img src="{{ asset('logos/Unobtuse-Ledger-Combo-Icon-Text-Light-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-8 hidden lg:block dark:hidden">
                         <!-- Desktop Dark Mode: Combo Icon Text -->
-                        <img src="{{ asset('logos/Unobtuse-Ledger-Combo-Icon-Text-Dark-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-8 hidden dark:lg:block">
+                        <img src="{{ asset('logos/Unobtuse-Ledger-Combo-Icon-Text-Dark-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-8 hidden lg:dark:block">
                         <!-- Mobile Light Mode: Icon Text -->
-                        <img src="{{ asset('logos/Unobtuse-Ledger-Icon-Text-Light-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-8 lg:hidden dark:hidden">
+                        <img src="{{ asset('logos/Unobtuse-Ledger-Icon-Text-Light-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-8 block lg:hidden dark:hidden">
                         <!-- Mobile Dark Mode: Icon Text -->
-                        <img src="{{ asset('logos/Unobtuse-Ledger-Icon-Text-Dark-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-8 hidden lg:hidden dark:block">
+                        <img src="{{ asset('logos/Unobtuse-Ledger-Icon-Text-Dark-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-8 hidden dark:block lg:dark:hidden">
                     </div>
                     <button @click="sidebarOpen = false" class="lg:hidden text-sidebar-foreground hover:text-sidebar-primary">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -226,8 +226,8 @@
                     </svg>
                 </button>
                 <div class="ml-4 flex items-center">
-                    <img src="{{ asset('logos/Unobtuse-Ledger-Icon-Text-Light-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-6 lg:hidden dark:hidden">
-                    <img src="{{ asset('logos/Unobtuse-Ledger-Icon-Text-Dark-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-6 hidden lg:hidden dark:block">
+                    <img src="{{ asset('logos/Unobtuse-Ledger-Icon-Text-Light-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-6 block dark:hidden">
+                    <img src="{{ asset('logos/Unobtuse-Ledger-Icon-Text-Dark-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-6 hidden dark:block">
                 </div>
             </div>
 

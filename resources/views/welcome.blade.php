@@ -50,8 +50,8 @@
             <div class="flex justify-between items-center h-16">
                 <!-- Logo -->
                 <div class="flex-shrink-0 flex items-center">
-                    <img src="{{ asset('logos/unobtuse-ledger-black-logo.svg') }}" alt="Unobtuse Ledger" class="h-8 dark:hidden">
-                    <img src="{{ asset('logos/unobtuse-ledger-white-logo.svg') }}" alt="Unobtuse Ledger" class="h-8 hidden dark:block">
+                    <img src="{{ asset('logos/Unobtuse-Ledger-Icon-Text-Light-Mode.svg') }}" alt="Unobtuse Ledger" class="h-8 dark:hidden">
+                    <img src="{{ asset('logos/Unobtuse-Ledger-Icon-Text-Dark-Mode.svg') }}" alt="Unobtuse Ledger" class="h-8 hidden dark:block">
                 </div>
 
                 <!-- Desktop Navigation -->
@@ -822,8 +822,8 @@
                 <!-- Brand -->
                 <div>
                     <div class="mb-4">
-                        <img src="{{ asset('logos/unobtuse-ledger-black-logo.svg') }}" alt="Unobtuse Ledger" class="h-8 dark:hidden">
-                        <img src="{{ asset('logos/unobtuse-ledger-white-logo.svg') }}" alt="Unobtuse Ledger" class="h-8 hidden dark:block">
+                        <img src="{{ asset('logos/Unobtuse-Ledger-Combo-Icon-Text-Light-Mode.svg') }}" alt="Unobtuse Ledger" class=" dark:hidden">
+                        <img src="{{ asset('logos/Unobtuse-Ledger-Combo-Icon-Text-Dark-Mode.svg') }}" alt="Unobtuse Ledger" class=" hidden dark:block">
                     </div>
                     <p class="text-sm" style="color: var(--color-muted-foreground);">
                         AI-powered personal finance management. Never miss a payment, never waste a dollar.

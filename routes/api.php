@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\PlaidWebhookController;
+use App\Http\Controllers\TellerWebhookController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -19,5 +20,10 @@ use Illuminate\Support\Facades\Route;
 Route::post('/plaid/webhook', [PlaidWebhookController::class, 'handle'])
     ->middleware('verify-plaid-webhook')
     ->name('plaid.webhook');
+
+// Teller Webhook (no auth middleware, Teller will call this)
+// Signature verification handled in controller
+Route::post('/teller/webhook', [TellerWebhookController::class, 'handle'])
+    ->name('teller.webhook');
 
 

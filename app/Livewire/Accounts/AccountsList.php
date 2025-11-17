@@ -46,6 +46,8 @@ class AccountsList extends Component
     public ?string $interestRateType = null;
     public string $websiteUrl = '';
     public string $initialLoanAmount = '';
+    public string $loanInterestRate = '';
+    public string $loanTermMonths = '';
     
     // Expanded accounts (for card details)
     public array $expandedAccounts = [];
@@ -451,6 +453,8 @@ class AccountsList extends Component
         $account = Account::findOrFail($accountId);
         $this->selectedAccountId = $accountId;
         $this->initialLoanAmount = $account->initial_loan_amount ? (string) $account->initial_loan_amount : '';
+        $this->loanInterestRate = $account->loan_interest_rate ? (string) $account->loan_interest_rate : '';
+        $this->loanTermMonths = $account->loan_term_months ? (string) $account->loan_term_months : '';
         $this->showInitialLoanAmountModal = true;
     }
 
@@ -461,11 +465,15 @@ class AccountsList extends Component
     {
         $this->validate([
             'initialLoanAmount' => 'required|numeric|min:0',
+            'loanInterestRate' => 'nullable|numeric|min:0|max:100',
+            'loanTermMonths' => 'nullable|integer|min:1|max:600',
         ]);
 
         $account = Account::findOrFail($this->selectedAccountId);
         $account->update([
             'initial_loan_amount' => $this->initialLoanAmount > 0 ? $this->initialLoanAmount : null,
+            'loan_interest_rate' => $this->loanInterestRate !== '' ? $this->loanInterestRate : null,
+            'loan_term_months' => $this->loanTermMonths !== '' ? $this->loanTermMonths : null,
         ]);
 
         $this->closeInitialLoanAmountModal();
@@ -480,6 +488,8 @@ class AccountsList extends Component
         $this->showInitialLoanAmountModal = false;
         $this->selectedAccountId = null;
         $this->initialLoanAmount = '';
+        $this->loanInterestRate = '';
+        $this->loanTermMonths = '';
     }
     
     /**

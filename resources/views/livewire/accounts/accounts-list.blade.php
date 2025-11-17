@@ -369,16 +369,49 @@
                 <h3 class="text-lg font-semibold text-card-foreground mb-4">Set Initial Loan Amount</h3>
                 <div class="space-y-4">
                     <div>
-                        <label class="block text-sm font-medium text-card-foreground mb-2">Initial Loan Amount</label>
+                        <label class="block text-sm font-medium text-card-foreground mb-2">Initial Loan Amount *</label>
                         <input type="number" 
                                step="0.01"
                                wire:model="initialLoanAmount" 
                                placeholder="25000.00"
                                class="w-full px-4 py-2 bg-background border border-input rounded-[var(--radius-sm)] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-150">
-                        <p class="mt-1 text-xs text-muted-foreground">Enter the original loan amount to track paydown progress (e.g., $25,000)</p>
+                        <p class="mt-1 text-xs text-muted-foreground">Original loan amount (e.g., $25,000)</p>
                         @error('initialLoanAmount')
                             <p class="mt-1 text-xs text-destructive">{{ $message }}</p>
                         @enderror
+                    </div>
+                    
+                    <div class="grid grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-sm font-medium text-card-foreground mb-2">Interest Rate <span class="text-xs text-muted-foreground">(optional)</span></label>
+                            <div class="relative">
+                                <input type="number" 
+                                       step="0.01"
+                                       wire:model="loanInterestRate" 
+                                       placeholder="5.99"
+                                       class="w-full px-4 py-2 pr-8 bg-background border border-input rounded-[var(--radius-sm)] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-150">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground">%</span>
+                            </div>
+                            <p class="mt-1 text-xs text-muted-foreground">Annual rate (e.g., 5.99%)</p>
+                            @error('loanInterestRate')
+                                <p class="mt-1 text-xs text-destructive">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-card-foreground mb-2">Loan Term <span class="text-xs text-muted-foreground">(optional)</span></label>
+                            <div class="relative">
+                                <input type="number" 
+                                       wire:model="loanTermMonths" 
+                                       placeholder="60"
+                                       class="w-full px-4 py-2 pr-16 bg-background border border-input rounded-[var(--radius-sm)] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-150">
+                                <span class="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground text-sm">months</span>
+                            </div>
+                            <p class="mt-1 text-xs text-muted-foreground">Term in months (e.g., 60)</p>
+                            @error('loanTermMonths')
+                                <p class="mt-1 text-xs text-destructive">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                     <div class="flex items-center justify-end gap-3">
                         <button wire:click="closeInitialLoanAmountModal" 

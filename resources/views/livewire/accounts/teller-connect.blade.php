@@ -1,4 +1,14 @@
-<div class="teller-connect-container">
+<div class="teller-connect-container" 
+     x-data 
+     x-on:teller-enrollment-success.window="
+        console.log('Caught teller-enrollment-success event:', $event.detail);
+        $wire.handleEnrollmentSuccess(
+            $event.detail.accessToken,
+            $event.detail.enrollmentId,
+            $event.detail.institutionName,
+            $event.detail.enrollmentData
+        )
+     ">
     <!-- Success Message -->
     @if ($success)
         <div class="mb-4 p-4 bg-green-100 border border-green-400 text-green-700 rounded-lg">
@@ -55,8 +65,33 @@ document.addEventListener('DOMContentLoaded', function() {
                 applicationId: configData.appId,
                 environment: configData.environment,
                 onSuccess: (enrollment) => {
-                    console.log('Teller enrollment successful:', enrollment);
-                    Livewire.dispatch('tellerEnrollmentSuccess', { enrollmentToken: enrollment.token });
+                    console.log('Teller enrollment successful - Full object:', enrollment);
+                    console.log('Enrollment keys:', Object.keys(enrollment));
+                    
+                    // Teller Connect returns the access token DIRECTLY in the callback
+                    // Structure: { accessToken: "...", enrollment: { id: "...", institution: {...} } }
+                    const accessToken = enrollment.accessToken;
+                    const enrollmentId = enrollment.enrollment?.id;
+                    const institutionName = enrollment.enrollment?.institution?.name;
+                    
+                    console.log('Access Token:', accessToken ? 'Present' : 'Missing');
+                    console.log('Enrollment ID:', enrollmentId);
+                    console.log('Institution:', institutionName);
+                    
+                    // Dispatch event to window for Livewire to catch
+                    const eventData = {
+                        accessToken: accessToken,
+                        enrollmentId: enrollmentId,
+                        institutionName: institutionName,
+                        enrollmentData: enrollment
+                    };
+                    
+                    console.log('Dispatching tellerEnrollmentSuccess with:', eventData);
+                    
+                    // Dispatch custom event on window
+                    window.dispatchEvent(new CustomEvent('teller-enrollment-success', { 
+                        detail: eventData 
+                    }));
                 },
                 onExit: () => {
                     console.log('Teller Connect closed');

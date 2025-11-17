@@ -127,6 +127,13 @@ return [
             'path' => storage_path('logs/laravel.log'),
         ],
 
+        'teller' => [
+            'driver' => 'single',
+            'path' => storage_path('logs/teller.log'),
+            'level' => env('LOG_LEVEL', 'debug'),
+            'replace_placeholders' => true,
+        ],
+
     ],
 
 ];

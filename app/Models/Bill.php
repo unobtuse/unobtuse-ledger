@@ -175,7 +175,7 @@ class Bill extends Model
      */
     public function getDaysUntilDueAttribute(): int
     {
-        return now()->diffInDays($this->next_due_date, false);
+        return (int) now()->diffInDays($this->next_due_date, false);
     }
 
     /**
