@@ -30,9 +30,14 @@ class Account extends Model
      */
     protected $fillable = [
         'user_id',
+        // Plaid fields (legacy, being phased out)
         'plaid_account_id',
         'plaid_access_token',
         'plaid_item_id',
+        // Teller fields (new API)
+        'teller_token',
+        'teller_account_id',
+        // Common fields
         'account_name',
         'nickname',
         'official_name',

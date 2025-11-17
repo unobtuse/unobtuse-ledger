@@ -1,0 +1,17 @@
+installation:
+  version: 6.0.0-alpha.9
+  installDate: '2025-11-13T23:51:40.722Z'
+  lastUpdated: '2025-11-13T23:51:40.722Z'
+modules:
+  - core
+  - bmb
+  - bmm
+  - cis
+ides:
+  - codex
+  - cursor
+  - github-copilot
+  - opencode
+  - gemini
+  - kilo
+  - qwen

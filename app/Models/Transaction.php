@@ -31,7 +31,10 @@ class Transaction extends Model
         'user_id',
         'account_id',
         'bill_id',
+        // External API transaction IDs
         'plaid_transaction_id',
+        'teller_transaction_id',
+        // Transaction details
         'name',
         'merchant_name',
         'amount',

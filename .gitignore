@@ -147,9 +147,13 @@ sample-synthetic-data.json
 /.vscode
 .cursorignore
 
+# Teller API certificates and keys
+.teller/
+
 # Error and debug files
 *.error
 *.err
 debug.log
 php_errors.log
+
 
