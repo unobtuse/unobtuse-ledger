@@ -25,7 +25,7 @@
     @livewireStyles
 
     <!-- Teller Connect SDK -->
-    <script src="https://connect.teller.io/connect.js"></script>
+    <script src="https://cdn.teller.io/connect/connect.js"></script>
 </head>
 <body class="antialiased bg-background text-foreground font-sans">
     <div class="min-h-screen" x-data="{ sidebarOpen: false }">
