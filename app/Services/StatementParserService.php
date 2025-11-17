@@ -19,7 +19,7 @@ use Illuminate\Support\Facades\Storage;
 class StatementParserService
 {
     protected string $apiKey;
-    protected string $model = 'gemini-1.5-flash-8b'; // Fast model with high capacity (2025)
+    protected string $model = 'gemini-2.5-flash'; // Stable 2.5 Flash (June 2025 release)
     protected string $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
     
     public function __construct()
