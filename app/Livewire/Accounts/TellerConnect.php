@@ -85,7 +85,7 @@ class TellerConnect extends Component
      * @param string $enrollmentToken
      */
     #[\Livewire\Attributes\On('tellerEnrollmentSuccess')]
-    public function handleEnrollmentSuccess(string $enrollmentToken): void
+    public function handleEnrollmentSuccess($enrollmentToken): void
     {
         try {
             $this->isLinking = true;
@@ -168,7 +168,7 @@ class TellerConnect extends Component
      * @param string $errorMessage
      */
     #[\Livewire\Attributes\On('tellerEnrollmentError')]
-    public function handleEnrollmentError(string $errorCode, string $errorMessage): void
+    public function handleEnrollmentError($errorCode, $errorMessage): void
     {
         Log::warning('Teller enrollment error', [
             'error_code' => $errorCode,
