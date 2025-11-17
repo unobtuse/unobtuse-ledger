@@ -155,8 +155,15 @@ class StatementParserService
      */
     protected function buildParsingPrompt(): string
     {
+        $currentYear = date('Y');
+        $currentMonth = date('n');
+        
         return <<<PROMPT
-Analyze this bank statement image and extract the following information in JSON format:
+Analyze this bank statement image and extract the following information in JSON format.
+
+CURRENT DATE CONTEXT: Today is {$currentYear}-{$currentMonth}. 
+If the year is not visible on the statement/screenshot, assume it is {$currentYear}.
+For recent transactions, use {$currentYear}.
 
 {
   "account": {
