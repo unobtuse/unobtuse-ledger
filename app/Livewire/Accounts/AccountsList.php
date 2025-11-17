@@ -34,6 +34,7 @@ class AccountsList extends Component
     public bool $showDisconnectModal = false;
     public bool $showDueDateModal = false;
     public bool $showWebsiteUrlModal = false;
+    public bool $showInitialLoanAmountModal = false;
     public ?string $selectedAccountId = null;
     
     // Form data
@@ -44,6 +45,7 @@ class AccountsList extends Component
     public ?string $interestRate = null;
     public ?string $interestRateType = null;
     public string $websiteUrl = '';
+    public float $initialLoanAmount = 0;
     
     // Expanded accounts (for card details)
     public array $expandedAccounts = [];
