@@ -75,7 +75,7 @@ class StatementParserService
                         'temperature' => 0.1,
                         'topK' => 1,
                         'topP' => 1,
-                        'maxOutputTokens' => 4096,
+                        'maxOutputTokens' => 8192, // Increased for large statements
                     ]
                 ]);
                 
@@ -121,9 +121,14 @@ class StatementParserService
             $parsedData = $this->parseAIResponse($content);
             
             if (!$parsedData) {
+                Log::error('Failed to parse AI response', [
+                    'content_length' => strlen($content),
+                    'content_preview' => substr($content, 0, 500)
+                ]);
+                
                 return [
                     'success' => false,
-                    'error' => 'Failed to parse AI response'
+                    'error' => 'Failed to parse AI response. Please try again or try a different file.'
                 ];
             }
             
