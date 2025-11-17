@@ -134,6 +134,69 @@
                 {{ $account->formatted_balance }}
             </p>
         </div>
+        
+        @php
+            // Calculate progress bar values
+            $showProgressBar = false;
+            $progressPercent = 0;
+            $progressLabel = '';
+            $progressColor = '';
+            
+            // Credit Card: Usage vs Limit
+            if ($account->account_type === 'credit_card' && $account->credit_limit > 0) {
+                $showProgressBar = true;
+                $usage = abs($account->balance);
+                $progressPercent = min(100, ($usage / $account->credit_limit) * 100);
+                $progressLabel = number_format($progressPercent, 0) . '% Used';
+                
+                // Color based on utilization
+                if ($progressPercent < 30) {
+                    $progressColor = 'bg-green-500';
+                } elseif ($progressPercent < 70) {
+                    $progressColor = 'bg-yellow-500';
+                } else {
+                    $progressColor = 'bg-red-500';
+                }
+            }
+            
+            // Loans: Paid Off Progress
+            if (in_array($account->account_type, ['loan', 'auto_loan', 'mortgage', 'student_loan']) && $account->initial_loan_amount > 0) {
+                $showProgressBar = true;
+                $currentBalance = abs($account->balance);
+                $paidOff = $account->initial_loan_amount - $currentBalance;
+                $progressPercent = min(100, ($paidOff / $account->initial_loan_amount) * 100);
+                $progressLabel = number_format($progressPercent, 0) . '% Paid Off';
+                $progressColor = 'bg-blue-500'; // Always blue for loans
+            }
+        @endphp
+        
+        @if($showProgressBar)
+            <!-- Progress Bar -->
+            <div class="space-y-2">
+                <div class="flex items-center justify-between text-xs">
+                    <span class="font-medium text-muted-foreground">
+                        @if($account->account_type === 'credit_card')
+                            Credit Utilization
+                        @else
+                            Loan Paydown
+                        @endif
+                    </span>
+                    <span class="font-semibold text-card-foreground">{{ $progressLabel }}</span>
+                </div>
+                <div class="w-full bg-muted rounded-full h-2.5 overflow-hidden">
+                    <div class="{{ $progressColor }} h-2.5 rounded-full transition-all duration-500" style="width: {{ $progressPercent }}%"></div>
+                </div>
+                @if($account->account_type === 'credit_card')
+                    <p class="text-xs text-muted-foreground">
+                        ${{ number_format(abs($account->balance), 2) }} of ${{ number_format($account->credit_limit, 2) }} limit
+                    </p>
+                @else
+                    <p class="text-xs text-muted-foreground">
+                        ${{ number_format($account->initial_loan_amount - abs($account->balance), 2) }} paid of ${{ number_format($account->initial_loan_amount, 2) }} original
+                    </p>
+                @endif
+            </div>
+        @endif
 
         <!-- Secondary Balance Info (Credit Cards) -->
         @if($account->account_type === 'credit_card')
