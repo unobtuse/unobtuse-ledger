@@ -48,8 +48,14 @@
                 <!-- Logo -->
                 <div class="flex items-center justify-between h-16 px-6 border-b border-sidebar-border">
                     <div class="flex items-center">
-                        <img src="{{ asset('logos/unobtuse-ledger-black-logo.svg') }}" alt="{{ config('app.name') }}" class="h-8 dark:hidden">
-                        <img src="{{ asset('logos/unobtuse-ledger-white-logo.svg') }}" alt="{{ config('app.name') }}" class="h-8 hidden dark:block">
+                        <!-- Desktop Light Mode: Combo Icon Text -->
+                        <img src="{{ asset('logos/Unobtuse-Ledger-Combo-Icon-Text-Light-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-8 hidden lg:block dark:lg:hidden">
+                        <!-- Desktop Dark Mode: Combo Icon Text -->
+                        <img src="{{ asset('logos/Unobtuse-Ledger-Combo-Icon-Text-Dark-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-8 hidden dark:lg:block">
+                        <!-- Mobile Light Mode: Icon Text -->
+                        <img src="{{ asset('logos/Unobtuse-Ledger-Icon-Text-Light-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-8 lg:hidden dark:hidden">
+                        <!-- Mobile Dark Mode: Icon Text -->
+                        <img src="{{ asset('logos/Unobtuse-Ledger-Icon-Text-Dark-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-8 hidden lg:hidden dark:block">
                     </div>
                     <button @click="sidebarOpen = false" class="lg:hidden text-sidebar-foreground hover:text-sidebar-primary">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -79,6 +85,14 @@
                                 {{ $transactionCount > 99 ? '99+' : $transactionCount }}
                             </span>
                         @endif
+                    </a>
+
+                    <a href="{{ route('recurring.index') }}" 
+                       class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('recurring.*') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground' }}">
+                        <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                        </svg>
+                        Recurring
                     </a>
 
                     <a href="{{ route('bills.index') }}" 
@@ -196,8 +210,8 @@
                     </svg>
                 </button>
                 <div class="ml-4 flex items-center">
-                    <img src="{{ asset('logos/unobtuse-ledger-black-logo.svg') }}" alt="{{ config('app.name') }}" class="h-6 dark:hidden">
-                    <img src="{{ asset('logos/unobtuse-ledger-white-logo.svg') }}" alt="{{ config('app.name') }}" class="h-6 hidden dark:block">
+                    <img src="{{ asset('logos/Unobtuse-Ledger-Icon-Text-Light-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-6 lg:hidden dark:hidden">
+                    <img src="{{ asset('logos/Unobtuse-Ledger-Icon-Text-Dark-Mode.svg') }}" alt="{{ config('app.name') }}" class="h-6 hidden lg:hidden dark:block">
                 </div>
             </div>
 
