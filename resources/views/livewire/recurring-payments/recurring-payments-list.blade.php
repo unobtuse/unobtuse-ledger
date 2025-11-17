@@ -144,8 +144,8 @@
                             @endif
                         </div>
 
-                        <!-- Frequency -->
-                        <div class="grid grid-cols-2 gap-3 mb-4">
+                        <!-- Frequency & Last Paid -->
+                        <div class="grid grid-cols-3 gap-3 mb-4">
                             <div class="bg-muted/30 rounded-[var(--radius-md)] p-3">
                                 <p class="text-xs font-medium text-muted-foreground mb-1">Frequency</p>
                                 <p class="text-sm font-semibold text-card-foreground">{{ $group['frequency'] }}</p>
@@ -153,6 +153,10 @@
                             <div class="bg-muted/30 rounded-[var(--radius-md)] p-3">
                                 <p class="text-xs font-medium text-muted-foreground mb-1">Occurrences</p>
                                 <p class="text-sm font-semibold text-card-foreground">{{ $group['occurrence_count'] }}x</p>
+                            </div>
+                            <div class="bg-chart-2/20 rounded-[var(--radius-md)] p-3">
+                                <p class="text-xs font-medium text-muted-foreground mb-1">Last Paid</p>
+                                <p class="text-sm font-semibold text-card-foreground">{{ $group['last_payment_date']->format('M d') }}</p>
                             </div>
                         </div>
 
@@ -175,8 +179,10 @@
                             </div>
                         @else
                             <div class="pt-3 border-t border-border/50">
-                                <p class="text-xs text-muted-foreground">Last payment: {{ $group['last_payment_date']->format('M d, Y') }}</p>
-                                <p class="text-xs text-muted-foreground">{{ $group['days_since_last'] }} days ago</p>
+                                <p class="text-xs text-muted-foreground">
+                                    Last payment: {{ $group['last_payment_date']->format('M d, Y') }} 
+                                    <span class="text-muted-foreground/70">({{ $group['days_since_last'] }} days ago)</span>
+                                </p>
                             </div>
                         @endif
                     </div>
