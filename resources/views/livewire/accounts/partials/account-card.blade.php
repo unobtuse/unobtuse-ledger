@@ -208,12 +208,12 @@
             <a href="{{ $account->institution_url }}" 
                target="_blank"
                rel="noopener noreferrer"
-               class="block w-full px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius-md)] font-medium text-sm hover:bg-primary/90 transition-all duration-150 text-center">
+               class="block w-full px-4 py-2 mb-2 bg-primary text-primary-foreground rounded-[var(--radius-md)] font-medium text-sm hover:bg-primary/90 transition-all duration-150 text-center">
                 🌐 Go to Website →
             </a>
         @else
             <button wire:click="openEditWebsiteUrl('{{ $account->id }}')"
-                    class="w-full px-4 py-2 bg-muted text-muted-foreground rounded-[var(--radius-md)] font-medium text-sm hover:bg-muted/80 transition-all duration-150">
+                    class="w-full px-4 py-2 mb-2 bg-muted text-muted-foreground rounded-[var(--radius-md)] font-medium text-sm hover:bg-muted/80 transition-all duration-150">
                 + Add Website URL
             </button>
         @endif
