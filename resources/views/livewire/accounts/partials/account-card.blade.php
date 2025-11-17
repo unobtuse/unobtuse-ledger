@@ -100,6 +100,14 @@
                                 Edit Website URL
                             </button>
                         @endif
+                        
+                        @if(in_array($account->account_type, ['loan', 'auto_loan', 'mortgage', 'student_loan']))
+                            <button wire:click="$parent.openInitialLoanAmountModal('{{ $account->id }}')" 
+                                    class="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted transition-colors">
+                                Set Initial Loan Amount
+                            </button>
+                        @endif
+                        
                         <div class="border-t border-border my-1"></div>
                         <button wire:click="confirmDisconnect('{{ $account->id }}')" 
                                 class="w-full text-left px-4 py-2 text-sm text-destructive hover:bg-destructive/10 transition-colors">

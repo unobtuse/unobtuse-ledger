@@ -361,6 +361,39 @@
             </div>
         </div>
     @endif
+
+    <!-- Initial Loan Amount Modal -->
+    @if($showInitialLoanAmountModal && $selectedAccount)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" x-show="$wire.showInitialLoanAmountModal" x-transition>
+            <div class="bg-card border border-border rounded-[var(--radius-large)] shadow-elevated p-6 w-full max-w-md" @click.away="$wire.closeInitialLoanAmountModal()">
+                <h3 class="text-lg font-semibold text-card-foreground mb-4">Set Initial Loan Amount</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-card-foreground mb-2">Initial Loan Amount</label>
+                        <input type="number" 
+                               step="0.01"
+                               wire:model="initialLoanAmount" 
+                               placeholder="25000.00"
+                               class="w-full px-4 py-2 bg-background border border-input rounded-[var(--radius-sm)] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-150">
+                        <p class="mt-1 text-xs text-muted-foreground">Enter the original loan amount to track paydown progress (e.g., $25,000)</p>
+                        @error('initialLoanAmount')
+                            <p class="mt-1 text-xs text-destructive">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="flex items-center justify-end gap-3">
+                        <button wire:click="closeInitialLoanAmountModal" 
+                                class="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-card-foreground transition-colors">
+                            Cancel
+                        </button>
+                        <button wire:click="saveInitialLoanAmount" 
+                                class="px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius-md)] font-semibold text-sm hover:opacity-90 transition-all duration-150">
+                            Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 
 <!-- Teller Connect Script -->
