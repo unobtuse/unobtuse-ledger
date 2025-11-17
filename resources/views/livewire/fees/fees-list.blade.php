@@ -215,7 +215,32 @@
                                 </td>
                                 <td class="px-6 py-4 text-sm text-muted-foreground">
                                     @if($fee->account)
-                                        {{ $fee->account->institution_name }} - {{ $fee->account->display_name_without_mask }}@if($fee->account->mask) - {{ $fee->account->mask }}@endif
+                                        <div class="space-y-1">
+                                            <div class="font-medium">
+                                                {{ $fee->account->institution_name }} - {{ $fee->account->display_name_without_mask }}@if($fee->account->mask) - {{ $fee->account->mask }}@endif
+                                            </div>
+                                            @if($fee->account->credit_limit && $fee->account->credit_limit > 0)
+                                                @php
+                                                    $utilization = ($fee->account->balance / $fee->account->credit_limit) * 100;
+                                                    $utilization = min($utilization, 100); // Cap at 100%
+                                                    
+                                                    // Determine color based on utilization
+                                                    if ($utilization <= 30) {
+                                                        $barColor = 'bg-chart-2'; // Green
+                                                    } elseif ($utilization <= 70) {
+                                                        $barColor = 'bg-chart-4'; // Yellow/Orange
+                                                    } else {
+                                                        $barColor = 'bg-destructive'; // Red
+                                                    }
+                                                @endphp
+                                                <div class="flex items-center gap-2">
+                                                    <div class="flex-1 h-2 bg-muted rounded-full overflow-hidden">
+                                                        <div class="{{ $barColor }} h-full rounded-full transition-all duration-300" style="width: {{ $utilization }}%"></div>
+                                                    </div>
+                                                    <span class="text-xs text-muted-foreground whitespace-nowrap">{{ number_format($utilization, 0) }}%</span>
+                                                </div>
+                                            @endif
+                                        </div>
                                     @else
                                         Unknown
                                     @endif
