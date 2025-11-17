@@ -204,6 +204,16 @@
 
     <!-- Action Buttons -->
     <div class="px-6 pb-6" @click.stop>
+        @if($account->is_manual)
+            <button onclick="Livewire.dispatch('openManualUpload')"
+                    class="w-full px-4 py-2 mb-2 bg-chart-2 text-white rounded-[var(--radius-md)] font-medium text-sm hover:bg-chart-2/90 transition-all duration-150 flex items-center justify-center gap-2">
+                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
+                </svg>
+                📄 Upload Update
+            </button>
+        @endif
+        
         @if($account->institution_url)
             <a href="{{ $account->institution_url }}" 
                target="_blank"
