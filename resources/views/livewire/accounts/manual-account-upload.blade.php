@@ -176,9 +176,10 @@
                                 @error('endingBalance') <span class="text-xs text-destructive">{{ $message }}</span> @enderror
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-card-foreground mb-2">Available Balance</label>
-                                <input type="number" step="0.01" wire:model="availableBalance" 
+                                <label class="block text-sm font-medium text-card-foreground mb-2">Available Balance <span class="text-xs text-muted-foreground">(optional)</span></label>
+                                <input type="number" step="0.01" wire:model="availableBalance" placeholder="Leave blank if N/A"
                                        class="w-full px-4 py-2 bg-background border border-input rounded-[var(--radius-sm)] text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                                <p class="text-xs text-muted-foreground mt-1">For live screenshots only. Leave blank for statements.</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-card-foreground mb-2">Credit Limit</label>

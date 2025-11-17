@@ -125,11 +125,19 @@ class ManualAccountUpload extends Component
             // Pre-fill form fields
             $this->institutionName = $this->parsedAccount['institution_name'] ?? '';
             $this->accountName = $this->parsedAccount['account_name'] ?? '';
-            $this->accountNumberLast4 = $this->parsedAccount['account_number_last4'] ?? '';
+            
+            // Ensure only last 4 digits
+            $accountNumber = $this->parsedAccount['account_number_last4'] ?? '';
+            $this->accountNumberLast4 = substr($accountNumber, -4);
+            
             $this->accountType = $this->parsedAccount['account_type'] ?? 'credit_card';
             $this->currency = $this->parsedAccount['currency'] ?? 'USD';
             $this->endingBalance = (float) ($this->parsedAccount['ending_balance'] ?? 0);
-            $this->availableBalance = (float) ($this->parsedAccount['available_balance'] ?? 0);
+            
+            // Only set available balance if it's actually present and non-zero
+            $availBal = (float) ($this->parsedAccount['available_balance'] ?? 0);
+            $this->availableBalance = $availBal > 0 ? $availBal : 0;
+            
             $this->creditLimit = (float) ($this->parsedAccount['credit_limit'] ?? 0);
             
             // Move to preview
@@ -202,9 +210,9 @@ class ManualAccountUpload extends Component
                 'account_name' => $this->accountName,
                 'nickname' => null,
                 'account_type' => $this->accountType,
-                'mask' => $this->accountNumberLast4,
+                'mask' => substr($this->accountNumberLast4, -4), // Ensure only last 4
                 'balance' => $this->endingBalance,
-                'available_balance' => $this->availableBalance > 0 ? $this->availableBalance : null,
+                'available_balance' => ($this->availableBalance > 0 && $this->availableBalance != $this->endingBalance) ? $this->availableBalance : null,
                 'credit_limit' => $this->creditLimit > 0 ? $this->creditLimit : null,
                 'currency' => $this->currency,
                 'sync_status' => 'synced',
