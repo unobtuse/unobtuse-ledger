@@ -184,12 +184,13 @@ Analyze this bank statement image and extract the following information in JSON 
 IMPORTANT RULES:
 1. For credit cards: amount should be POSITIVE for purchases (debits) and NEGATIVE for payments/credits
 2. For checking/savings: amount should be POSITIVE for withdrawals and NEGATIVE for deposits
-3. Extract ALL transactions visible in the statement
-4. Use the EXACT transaction descriptions as shown
-5. Parse dates carefully in YYYY-MM-DD format
-6. If a field is not visible or unclear, use null
-7. Ensure all amounts are decimal numbers
-8. Return ONLY valid JSON, no additional text
+3. For screenshots: Extract ONLY transactions from the MOST RECENT 45 DAYS to avoid token limits
+4. For PDF statements: Extract ALL transactions visible in the statement
+5. Use the EXACT transaction descriptions as shown
+6. Parse dates carefully in YYYY-MM-DD format
+7. If a field is not visible or unclear, use null
+8. Ensure all amounts are decimal numbers
+9. Return ONLY valid JSON, no additional text
 
 Return the JSON data now:
 PROMPT;
