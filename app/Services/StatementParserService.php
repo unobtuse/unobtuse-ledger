@@ -47,32 +47,53 @@ class StatementParserService
             // Create the prompt for AI
             $prompt = $this->buildParsingPrompt();
             
-            // Call Google Gemini API
+            // Call Google Gemini API with retry logic
             $url = "{$this->apiUrl}/{$this->model}:generateContent?key={$this->apiKey}";
             
-            $response = Http::timeout(120)->post($url, [
-                'contents' => [
-                    [
-                        'parts' => [
-                            [
-                                'text' => $prompt
-                            ],
-                            [
-                                'inline_data' => [
-                                    'mime_type' => $mimeType,
-                                    'data' => $base64Content
+            $maxRetries = 3;
+            $retryDelay = 2; // seconds
+            $response = null;
+            
+            for ($attempt = 1; $attempt <= $maxRetries; $attempt++) {
+                $response = Http::timeout(120)->post($url, [
+                    'contents' => [
+                        [
+                            'parts' => [
+                                [
+                                    'text' => $prompt
+                                ],
+                                [
+                                    'inline_data' => [
+                                        'mime_type' => $mimeType,
+                                        'data' => $base64Content
+                                    ]
                                 ]
                             ]
                         ]
+                    ],
+                    'generationConfig' => [
+                        'temperature' => 0.1,
+                        'topK' => 1,
+                        'topP' => 1,
+                        'maxOutputTokens' => 4096,
                     ]
-                ],
-                'generationConfig' => [
-                    'temperature' => 0.1,
-                    'topK' => 1,
-                    'topP' => 1,
-                    'maxOutputTokens' => 4096,
-                ]
-            ]);
+                ]);
+                
+                // If successful or non-retryable error, break
+                if ($response->successful() || !in_array($response->status(), [503, 429, 500])) {
+                    break;
+                }
+                
+                // Log retry attempt
+                if ($attempt < $maxRetries) {
+                    Log::warning("Gemini API retry attempt {$attempt}/{$maxRetries}", [
+                        'status' => $response->status(),
+                        'attempt' => $attempt
+                    ]);
+                    sleep($retryDelay);
+                    $retryDelay *= 2; // Exponential backoff
+                }
+            }
             
             if (!$response->successful()) {
                 Log::error('Google Gemini API request failed', [
