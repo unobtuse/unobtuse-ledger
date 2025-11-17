@@ -1,0 +1,155 @@
+# Laravel defaults
+/node_modules
+/public/hot
+/public/storage
+/storage/*.key
+/vendor
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+npm-debug.log
+yarn-error.log
+
+# Environment files (ALL variants - CRITICAL for security)
+.env
+.env.*
+!.env.example
+.env.backup
+.env.production
+.env.local
+.env.staging
+.env.testing
+.env.development
+*.env
+
+# IDE files
+.idea/
+.vscode/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# Exclude all markdown files except GitHub standard files
+*.md
+!README.md
+!CONTRIBUTING.md
+!CODE_OF_CONDUCT.md
+!SECURITY.md
+!LICENSE.md
+!CHANGELOG.md
+
+# Development folders and files
+/docs/
+/plans/
+/.cursor/
+/.bmad/
+/.github/chatmodes/
+.cursorrules
+
+# OS files
+Thumbs.db
+
+# Progress tracking files (keep out of repo)
+/progress/
+
+# Build artifacts
+/dist
+/build
+.parcel-cache
+
+# Testing
+coverage/
+.coverage
+htmlcov/
+
+# Database files and backups
+*.sqlite
+*.sqlite-journal
+*.sql
+*.dump
+/storage/app/backups/
+/storage/app/backups/**
+*.backup
+backup-*.sql
+backup-*.txt
+*-backup-*.sql
+*-backup-*.txt
+
+# Log files (may contain sensitive data)
+/storage/logs/
+*.log
+*.log.*
+laravel.log
+error.log
+access.log
+backup-error-*.txt
+
+# Certificate and key files (CRITICAL for security)
+*.pem
+*.key
+*.crt
+*.cer
+*.p12
+*.pfx
+*.jks
+*.keystore
+*.cert
+*.csr
+*.der
+id_rsa
+id_rsa.pub
+id_dsa
+id_dsa.pub
+id_ecdsa
+id_ecdsa.pub
+id_ed25519
+id_ed25519.pub
+*.pub
+*.private
+
+# API keys and secrets (specific file patterns only - not code files)
+# Note: Only matching actual secret/key files, not code files with these words in names
+secrets.json
+secrets.yaml
+secrets.yml
+api-keys.txt
+credentials.txt
+*.secrets
+*.keys
+
+# Temporary files
+*.tmp
+*.temp
+*.cache
+*.swp
+*.swo
+*~
+.cache/
+
+# Sensitive data files
+synthetic_data.json
+sample-synthetic-data.json
+*.json.backup
+*.csv.backup
+
+# BMAD and AI tool configs (may contain API keys)
+.bmad/**/*.yaml
+.bmad/**/*config*.yaml
+!.bmad/**/config.yaml.example
+.gemini/
+.opencode/
+.qwen/
+.kilocodemodes
+
+# Cursor/VSCode settings (may contain sensitive paths)
+/.cursor
+/.vscode
+.cursorignore
+
+# Error and debug files
+*.error
+*.err
+debug.log
+php_errors.log
+
