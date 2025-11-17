@@ -1,0 +1,255 @@
+<?php
+
+declare(strict_types=1);
+
+namespace App\Livewire\Accounts;
+
+use App\Models\Account;
+use App\Models\Transaction;
+use App\Services\StatementParserService;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\Storage;
+use Livewire\Component;
+use Livewire\WithFileUploads;
+
+/**
+ * Manual Account Upload Component
+ * 
+ * Handles AI-powered parsing of bank statements (PDFs/images)
+ * to create manual accounts and import transactions.
+ */
+class ManualAccountUpload extends Component
+{
+    use WithFileUploads;
+    
+    // Modal state
+    public bool $showUploadModal = false;
+    public bool $showPreviewModal = false;
+    
+    // Upload step
+    public $statementFile;
+    public bool $isProcessing = false;
+    public ?string $errorMessage = null;
+    
+    // Parsed data
+    public ?array $parsedAccount = null;
+    public ?array $parsedTransactions = null;
+    
+    // User editable fields
+    public string $institutionName = '';
+    public string $accountName = '';
+    public string $accountNumberLast4 = '';
+    public string $accountType = 'credit_card';
+    public string $currency = 'USD';
+    public float $endingBalance = 0;
+    public float $availableBalance = 0;
+    public float $creditLimit = 0;
+    
+    protected StatementParserService $parserService;
+    
+    /**
+     * Boot component dependencies
+     */
+    public function boot(StatementParserService $parserService): void
+    {
+        $this->parserService = $parserService;
+    }
+    
+    /**
+     * Listen for events
+     */
+    protected $listeners = [
+        'openManualUpload' => 'openUploadModal',
+        'account-created' => '$refresh',
+    ];
+    
+    /**
+     * Open upload modal
+     */
+    public function openUploadModal(): void
+    {
+        $this->reset([
+            'statementFile',
+            'isProcessing',
+            'errorMessage',
+            'parsedAccount',
+            'parsedTransactions'
+        ]);
+        $this->showUploadModal = true;
+    }
+    
+    /**
+     * Close upload modal
+     */
+    public function closeUploadModal(): void
+    {
+        $this->showUploadModal = false;
+        $this->reset(['statementFile', 'errorMessage']);
+    }
+    
+    /**
+     * Process uploaded statement with AI
+     */
+    public function processStatement(): void
+    {
+        $this->validate([
+            'statementFile' => 'required|file|mimes:jpg,jpeg,png,gif,webp,pdf|max:10240', // Max 10MB
+        ]);
+        
+        $this->isProcessing = true;
+        $this->errorMessage = null;
+        
+        try {
+            // Store file temporarily
+            $path = $this->statementFile->store('temp-statements', 'local');
+            $extension = $this->statementFile->getClientOriginalExtension();
+            
+            // Parse with AI
+            $result = $this->parserService->parseStatement($path, $extension);
+            
+            // Clean up temp file
+            Storage::disk('local')->delete($path);
+            
+            if (!$result['success']) {
+                $this->errorMessage = $result['error'];
+                $this->isProcessing = false;
+                return;
+            }
+            
+            // Store parsed data
+            $data = $result['data'];
+            $this->parsedAccount = $data['account'];
+            $this->parsedTransactions = $data['transactions'];
+            
+            // Pre-fill form fields
+            $this->institutionName = $this->parsedAccount['institution_name'] ?? '';
+            $this->accountName = $this->parsedAccount['account_name'] ?? '';
+            $this->accountNumberLast4 = $this->parsedAccount['account_number_last4'] ?? '';
+            $this->accountType = $this->parsedAccount['account_type'] ?? 'credit_card';
+            $this->currency = $this->parsedAccount['currency'] ?? 'USD';
+            $this->endingBalance = (float) ($this->parsedAccount['ending_balance'] ?? 0);
+            $this->availableBalance = (float) ($this->parsedAccount['available_balance'] ?? 0);
+            $this->creditLimit = (float) ($this->parsedAccount['credit_limit'] ?? 0);
+            
+            // Move to preview
+            $this->showUploadModal = false;
+            $this->showPreviewModal = true;
+            
+        } catch (\Exception $e) {
+            Log::error('Statement processing failed', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+            
+            $this->errorMessage = 'Failed to process statement: ' . $e->getMessage();
+        }
+        
+        $this->isProcessing = false;
+    }
+    
+    /**
+     * Close preview modal
+     */
+    public function closePreviewModal(): void
+    {
+        $this->showPreviewModal = false;
+        $this->reset([
+            'parsedAccount',
+            'parsedTransactions',
+            'institutionName',
+            'accountName',
+            'accountNumberLast4',
+            'accountType',
+            'currency',
+            'endingBalance',
+            'availableBalance',
+            'creditLimit'
+        ]);
+    }
+    
+    /**
+     * Save manual account and transactions
+     */
+    public function saveManualAccount(): void
+    {
+        $this->validate([
+            'institutionName' => 'required|string|max:255',
+            'accountName' => 'required|string|max:255',
+            'accountType' => 'required|string|in:checking,savings,credit_card,investment,loan',
+            'endingBalance' => 'required|numeric',
+        ]);
+        
+        try {
+            DB::beginTransaction();
+            
+            // Create manual account
+            $account = Account::create([
+                'user_id' => auth()->id(),
+                'institution_name' => $this->institutionName,
+                'account_name' => $this->accountName,
+                'nickname' => null,
+                'account_type' => $this->accountType,
+                'mask' => $this->accountNumberLast4,
+                'balance' => $this->endingBalance,
+                'available_balance' => $this->availableBalance > 0 ? $this->availableBalance : null,
+                'credit_limit' => $this->creditLimit > 0 ? $this->creditLimit : null,
+                'currency' => $this->currency,
+                'sync_status' => 'synced',
+                'last_synced_at' => now(),
+                'is_active' => true,
+                'is_manual' => true,
+            ]);
+            
+            // Create transactions
+            $transactionCount = 0;
+            if ($this->parsedTransactions && is_array($this->parsedTransactions)) {
+                foreach ($this->parsedTransactions as $txn) {
+                    if (empty($txn['date']) || empty($txn['description']) || !isset($txn['amount'])) {
+                        continue; // Skip invalid transactions
+                    }
+                    
+                    Transaction::create([
+                        'user_id' => auth()->id(),
+                        'account_id' => $account->id,
+                        'name' => $txn['description'],
+                        'merchant_name' => $txn['description'],
+                        'amount' => (float) $txn['amount'],
+                        'transaction_date' => $txn['date'],
+                        'iso_currency_code' => $this->currency,
+                        'transaction_type' => $txn['type'] ?? 'debit',
+                        'pending' => false,
+                        'is_manual' => true,
+                    ]);
+                    
+                    $transactionCount++;
+                }
+            }
+            
+            DB::commit();
+            
+            session()->flash('success', "Manual account '{$this->accountName}' created with {$transactionCount} transactions!");
+            
+            $this->closePreviewModal();
+            $this->dispatch('account-created');
+            
+        } catch (\Exception $e) {
+            DB::rollBack();
+            
+            Log::error('Failed to save manual account', [
+                'error' => $e->getMessage(),
+                'user_id' => auth()->id()
+            ]);
+            
+            session()->flash('error', 'Failed to save account: ' . $e->getMessage());
+        }
+    }
+    
+    /**
+     * Render component
+     */
+    public function render()
+    {
+        return view('livewire.accounts.manual-account-upload');
+    }
+}

@@ -2,6 +2,9 @@
     <!-- Teller Connect Component -->
     <livewire:accounts.teller-connect />
 
+    <!-- Manual Account Upload Component -->
+    <livewire:accounts.manual-account-upload />
+
     <!-- Flash Messages -->
     @if (session()->has('success'))
         <div x-data="{ show: true }" 
@@ -66,13 +69,22 @@
                 <p class="text-sm font-medium text-muted-foreground">Total Accounts</p>
                 <p class="text-3xl font-semibold text-card-foreground mt-1">{{ $summaryStats['total_count'] }}</p>
             </div>
-            <button wire:click="dispatch('initiateTellerConnect')"
-                    class="mt-4 w-full inline-flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius-md)] font-semibold text-sm hover:opacity-90 transition-all duration-150">
-                <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
-                </svg>
-                Link Account
-            </button>
+            <div class="mt-4 space-y-2">
+                <button wire:click="dispatch('initiateTellerConnect')"
+                        class="w-full inline-flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius-md)] font-semibold text-sm hover:opacity-90 transition-all duration-150">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+                    </svg>
+                    Link Account
+                </button>
+                <button onclick="Livewire.dispatch('openManualUpload')"
+                        class="w-full inline-flex items-center justify-center px-4 py-2 bg-muted text-muted-foreground rounded-[var(--radius-md)] font-medium text-sm hover:bg-muted/80 transition-all duration-150">
+                    <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 13h6m-3-3v6m5 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                    </svg>
+                    Add Manual Account
+                </button>
+            </div>
         </div>
     </div>
 
