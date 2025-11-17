@@ -26,6 +26,21 @@
                         </div>
                     @endif
 
+                    <!-- Statement Year Selector -->
+                    <div class="mb-4">
+                        <label class="block text-sm font-medium text-card-foreground mb-2">Statement Year</label>
+                        <select wire:model="statementYear" 
+                                class="w-full px-4 py-2 bg-background border border-input rounded-[var(--radius-sm)] text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                            @php
+                                $currentYear = date('Y');
+                            @endphp
+                            @for ($year = $currentYear; $year >= $currentYear - 5; $year--)
+                                <option value="{{ $year }}">{{ $year }}</option>
+                            @endfor
+                        </select>
+                        <p class="text-xs text-muted-foreground mt-1">Select the year of the statement/screenshot for accurate date parsing</p>
+                    </div>
+
                     <!-- File Upload Dropzone -->
                     <div class="space-y-4">
                         <div 

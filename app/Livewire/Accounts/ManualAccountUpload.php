@@ -31,6 +31,7 @@ class ManualAccountUpload extends Component
     public $statementFile;
     public bool $isProcessing = false;
     public ?string $errorMessage = null;
+    public int $statementYear;
     
     // Parsed data
     public ?array $parsedAccount = null;
@@ -75,6 +76,7 @@ class ManualAccountUpload extends Component
     public function openUploadModal(): void
     {
         $this->existingAccountId = null;
+        $this->statementYear = (int) date('Y'); // Default to current year
         $this->reset([
             'statementFile',
             'isProcessing',
@@ -120,6 +122,7 @@ class ManualAccountUpload extends Component
         $this->endingBalance = (float) $account->balance;
         $this->availableBalance = (float) ($account->available_balance ?? 0);
         $this->creditLimit = (float) ($account->credit_limit ?? 0);
+        $this->statementYear = (int) date('Y'); // Default to current year
         
         $this->reset([
             'statementFile',
@@ -158,8 +161,8 @@ class ManualAccountUpload extends Component
             $path = $this->statementFile->store('temp-statements', 'local');
             $extension = $this->statementFile->getClientOriginalExtension();
             
-            // Parse with AI
-            $result = $this->parserService->parseStatement($path, $extension);
+            // Parse with AI (pass the selected year for context)
+            $result = $this->parserService->parseStatement($path, $extension, $this->statementYear);
             
             // Clean up temp file
             Storage::disk('local')->delete($path);
