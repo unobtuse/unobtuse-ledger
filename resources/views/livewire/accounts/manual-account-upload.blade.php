@@ -245,11 +245,19 @@
                                                 @php
                                                     $isDuplicate = $duplicateTransactionIndices && in_array($index, $duplicateTransactionIndices);
                                                 @endphp
-                                                <tr class="hover:bg-muted/50 group {{ $isDuplicate ? 'opacity-60 bg-yellow-500/5' : '' }}">
+                                                @php
+                                                    $hasSuggestion = $suggestedDates && isset($suggestedDates[$index]);
+                                                @endphp
+                                                <tr class="hover:bg-muted/50 group {{ $isDuplicate ? 'opacity-60 bg-yellow-500/5' : '' }} {{ $hasSuggestion ? 'bg-blue-500/5 border-l-4 border-blue-500' : '' }}">
                                                     <td class="p-3 text-card-foreground relative {{ $isDuplicate ? 'line-through' : '' }}">
                                                         {{ \Carbon\Carbon::parse($txn['date'])->format('M d, Y') }}
                                                         @if($isDuplicate)
                                                             <span class="absolute -left-2 top-1/2 -translate-y-1/2 text-yellow-600 dark:text-yellow-400" title="Duplicate - will be skipped">⚠️</span>
+                                                        @endif
+                                                        @if($hasSuggestion)
+                                                            <div class="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                                                💡 Actual: {{ \Carbon\Carbon::parse($suggestedDates[$index]['suggested_date'])->format('M d, Y') }}
+                                                            </div>
                                                         @endif
                                                     </td>
                                                     <td class="p-3 text-card-foreground {{ $isDuplicate ? 'line-through' : '' }}">
@@ -267,14 +275,23 @@
                                                         </span>
                                                     </td>
                                                     <td class="p-3 text-center">
-                                                        <button 
-                                                            wire:click="removeTransaction({{ $index }})"
-                                                            class="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 {{ $isDuplicate ? 'hidden' : '' }}"
-                                                            title="Remove this transaction">
-                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
-                                                            </svg>
-                                                        </button>
+                                                        @if($hasSuggestion)
+                                                            <button 
+                                                                wire:click="acceptSuggestedDate({{ $index }})"
+                                                                class="text-xs px-2 py-1 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+                                                                title="Use actual payment date">
+                                                                Use Actual Date
+                                                            </button>
+                                                        @else
+                                                            <button 
+                                                                wire:click="removeTransaction({{ $index }})"
+                                                                class="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 {{ $isDuplicate ? 'hidden' : '' }}"
+                                                                title="Remove this transaction">
+                                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                                </svg>
+                                                            </button>
+                                                        @endif
                                                         @if($isDuplicate)
                                                             <span class="text-xs text-yellow-600 dark:text-yellow-400">Skip</span>
                                                         @endif

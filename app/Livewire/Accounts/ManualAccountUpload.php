@@ -37,6 +37,7 @@ class ManualAccountUpload extends Component
     public ?array $parsedAccount = null;
     public ?array $parsedTransactions = null;
     public ?array $duplicateTransactionIndices = null;
+    public ?array $suggestedDates = null; // Cross-referenced actual payment dates
     
     // User editable fields
     public string $institutionName = '';
@@ -305,6 +306,83 @@ class ManualAccountUpload extends Component
             'availableBalance',
             'creditLimit'
         ]);
+    }
+    
+    /**
+     * Cross-reference loan payments with other accounts to find actual payment dates
+     */
+    protected function crossReferenceLoanPayments(): void
+    {
+        $this->suggestedDates = [];
+        
+        // Only for loan accounts
+        $accountType = $this->parsedAccount['account_type'] ?? '';
+        if (!in_array($accountType, ['loan', 'auto_loan', 'mortgage', 'student_loan'])) {
+            return;
+        }
+        
+        if (!$this->parsedTransactions) {
+            return;
+        }
+        
+        // Get all user's accounts (to search for matching payments)
+        $allAccounts = Account::where('user_id', auth()->id())
+            ->where('id', '!=', $this->existingAccountId ?? 'none')
+            ->pluck('id');
+        
+        if ($allAccounts->isEmpty()) {
+            return;
+        }
+        
+        // For each parsed transaction, look for matching payment in other accounts
+        foreach ($this->parsedTransactions as $index => $txn) {
+            if (empty($txn['date']) || !isset($txn['amount'])) {
+                continue;
+            }
+            
+            $parsedDate = \Carbon\Carbon::parse($txn['date']);
+            $amount = abs((float) $txn['amount']); // Use absolute value for matching
+            
+            // Search for payment within ±7 days with matching amount
+            $matchingPayment = Transaction::whereIn('account_id', $allAccounts)
+                ->whereBetween('transaction_date', [
+                    $parsedDate->copy()->subDays(7),
+                    $parsedDate->copy()->addDays(7)
+                ])
+                ->where(function($query) use ($amount) {
+                    $query->where('amount', -$amount) // Outgoing payment
+                          ->orWhere('amount', $amount); // Or positive (depending on account type)
+                })
+                ->with('account')
+                ->first();
+            
+            if ($matchingPayment) {
+                $this->suggestedDates[$index] = [
+                    'suggested_date' => $matchingPayment->transaction_date->format('Y-m-d'),
+                    'original_date' => $txn['date'],
+                    'from_account' => $matchingPayment->account->institution_name . ' - ' . $matchingPayment->account->account_name,
+                    'amount' => $amount,
+                ];
+            }
+        }
+        
+        if (count($this->suggestedDates) > 0) {
+            Log::info('Cross-referenced loan payments', [
+                'suggestions_found' => count($this->suggestedDates),
+                'suggestions' => $this->suggestedDates
+            ]);
+        }
+    }
+    
+    /**
+     * Accept suggested date for a transaction
+     */
+    public function acceptSuggestedDate(int $index): void
+    {
+        if (isset($this->suggestedDates[$index]) && isset($this->parsedTransactions[$index])) {
+            $this->parsedTransactions[$index]['date'] = $this->suggestedDates[$index]['suggested_date'];
+            unset($this->suggestedDates[$index]);
+        }
     }
     
     /**
