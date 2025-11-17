@@ -32,9 +32,10 @@ class StatementParserService
      *
      * @param string $filePath Path to the uploaded file
      * @param string $fileType Type of file (pdf, jpg, png, etc.)
+     * @param int|null $statementYear Optional year to use for date parsing
      * @return array Parsed data including account info and transactions
      */
-    public function parseStatement(string $filePath, string $fileType): array
+    public function parseStatement(string $filePath, string $fileType, ?int $statementYear = null): array
     {
         try {
             // Convert file to base64 for API
@@ -44,8 +45,8 @@ class StatementParserService
             // Determine MIME type
             $mimeType = $this->getMimeType($fileType);
             
-            // Create the prompt for AI
-            $prompt = $this->buildParsingPrompt();
+            // Create the prompt for AI (with user-provided year if available)
+            $prompt = $this->buildParsingPrompt($statementYear);
             
             // Call Google Gemini API with retry logic
             $url = "{$this->apiUrl}/{$this->model}:generateContent?key={$this->apiKey}";
