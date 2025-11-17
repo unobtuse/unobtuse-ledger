@@ -329,9 +329,14 @@ class ManualAccountUpload extends Component
         }
         
         // Get all user's accounts (to search for matching payments)
-        $allAccounts = Account::where('user_id', auth()->id())
-            ->where('id', '!=', $this->existingAccountId ?? 'none')
-            ->pluck('id');
+        $query = Account::where('user_id', auth()->id());
+        
+        // Exclude existing account if updating
+        if ($this->existingAccountId) {
+            $query->where('id', '!=', $this->existingAccountId);
+        }
+        
+        $allAccounts = $query->pluck('id');
         
         if ($allAccounts->isEmpty()) {
             return;
