@@ -48,6 +48,7 @@ class ManualAccountUpload extends Component
     public float $endingBalance = 0;
     public float $availableBalance = 0;
     public float $creditLimit = 0;
+    public float $initialLoanAmount = 0;
     
     protected StatementParserService $parserService;
     
