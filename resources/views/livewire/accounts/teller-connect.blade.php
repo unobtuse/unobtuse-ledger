@@ -19,18 +19,12 @@
 
 @script
 <script>
-document.addEventListener('livewire:navigated', () => {
-    const component = Livewire.find('@this.getId()');
-    if (!component) return;
-    
-    // Listen for showConnect property changes
-    Livewire.on('initiateTellerConnect', () => {
-        setTimeout(() => initializeTellerConnect(), 100);
-    });
-    
-    window.showTellerConnect = function() {
-        initializeTellerConnect();
-    };
+// Store config globally
+const tellerConnectConfig = @json($connectConfig);
+
+// Listen for Livewire events
+Livewire.on('initiateTellerConnect', () => {
+    setTimeout(() => initializeTellerConnect(), 100);
 });
 
 function initializeTellerConnect() {
@@ -41,15 +35,16 @@ function initializeTellerConnect() {
         return;
     }
     
-    const config = @json($connectConfig);
-    if (!config) {
+    if (!tellerConnectConfig) {
         console.error('Teller Connect config not available');
         alert('Failed to load Teller configuration. Please try again.');
         return;
     }
     
     try {
-        const configData = typeof config === 'string' ? JSON.parse(config) : config;
+        const configData = typeof tellerConnectConfig === 'string' ? JSON.parse(tellerConnectConfig) : tellerConnectConfig;
+        
+        console.log('Initializing Teller Connect with config:', configData);
         
         // Initialize Teller Connect
         window.Teller.init({
@@ -58,11 +53,11 @@ function initializeTellerConnect() {
             onSuccess: (enrollment) => {
                 console.log('Teller enrollment successful:', enrollment);
                 // Send enrollment token back to Livewire component
-                Livewire.dispatch('handleEnrollmentSuccess', { enrollmentToken: enrollment.token });
+                Livewire.dispatch('tellerEnrollmentSuccess', { enrollmentToken: enrollment.token });
             },
             onError: (error) => {
                 console.error('Teller enrollment error:', error);
-                Livewire.dispatch('handleEnrollmentError', { 
+                Livewire.dispatch('tellerEnrollmentError', { 
                     errorCode: error.code || 'unknown_error',
                     errorMessage: error.message || 'An error occurred during enrollment'
                 });

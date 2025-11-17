@@ -31,6 +31,10 @@ class TellerConnect extends Component
     {
         $this->user = auth()->user();
         $this->tellerService = app(TellerService::class);
+        
+        // Initialize Teller Connect config
+        $config = $this->getTellerService()->initializeTellerConnect($this->user);
+        $this->connectConfig = json_encode($config);
     }
 
     /**
