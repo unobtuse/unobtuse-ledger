@@ -177,9 +177,24 @@ class ManualAccountUpload extends Component
             
             // Check for duplicates against existing account (match on date + amount only)
             $this->duplicateTransactionIndices = [];
+            
+            Log::info('Duplicate check', [
+                'existingAccountId' => $this->existingAccountId,
+                'has_transactions' => !empty($this->parsedTransactions),
+                'txn_count' => count($this->parsedTransactions ?? [])
+            ]);
+            
             if ($this->existingAccountId && $this->parsedTransactions) {
                 $account = Account::find($this->existingAccountId);
+                
+                Log::info('Checking duplicates for account', [
+                    'account_id' => $account?->id,
+                    'account_name' => $account?->account_name,
+                    'existing_txn_count' => $account ? Transaction::where('account_id', $account->id)->count() : 0
+                ]);
+                
                 if ($account) {
+                    $duplicateCount = 0;
                     foreach ($this->parsedTransactions as $index => $txn) {
                         if (empty($txn['date']) || !isset($txn['amount'])) {
                             continue;
@@ -193,8 +208,14 @@ class ManualAccountUpload extends Component
                         
                         if ($existingTransaction) {
                             $this->duplicateTransactionIndices[] = $index;
+                            $duplicateCount++;
                         }
                     }
+                    
+                    Log::info('Duplicate detection complete', [
+                        'duplicates_found' => $duplicateCount,
+                        'total_parsed' => count($this->parsedTransactions)
+                    ]);
                 }
             }
             
