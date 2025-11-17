@@ -11,8 +11,13 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('accounts_and_transactions', function (Blueprint $table) {
-            //
+        Schema::table('accounts', function (Blueprint $table) {
+            $table->boolean('is_manual')->default(false)->after('is_active');
+            $table->string('statement_file_path')->nullable()->after('is_manual');
+        });
+        
+        Schema::table('transactions', function (Blueprint $table) {
+            $table->boolean('is_manual')->default(false)->after('pending');
         });
     }
 
@@ -21,8 +26,12 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::table('accounts_and_transactions', function (Blueprint $table) {
-            //
+        Schema::table('accounts', function (Blueprint $table) {
+            $table->dropColumn(['is_manual', 'statement_file_path']);
+        });
+        
+        Schema::table('transactions', function (Blueprint $table) {
+            $table->dropColumn('is_manual');
         });
     }
 };

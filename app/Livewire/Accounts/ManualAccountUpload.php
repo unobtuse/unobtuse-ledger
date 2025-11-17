@@ -134,11 +134,13 @@ class ManualAccountUpload extends Component
             $this->currency = $this->parsedAccount['currency'] ?? 'USD';
             $this->endingBalance = (float) ($this->parsedAccount['ending_balance'] ?? 0);
             
-            // Only set available balance if it's actually present and non-zero
+            // Only set available balance if it's actually present and non-zero (leave empty otherwise)
             $availBal = (float) ($this->parsedAccount['available_balance'] ?? 0);
-            $this->availableBalance = $availBal > 0 ? $availBal : 0;
+            $this->availableBalance = $availBal > 0 ? $availBal : 0.0; // Will be cleared in UI if user wants
             
-            $this->creditLimit = (float) ($this->parsedAccount['credit_limit'] ?? 0);
+            // Only set credit limit if present and non-zero (leave empty otherwise)
+            $creditLim = (float) ($this->parsedAccount['credit_limit'] ?? 0);
+            $this->creditLimit = $creditLim > 0 ? $creditLim : 0.0; // Will be cleared in UI if user wants
             
             // Move to preview
             $this->showUploadModal = false;

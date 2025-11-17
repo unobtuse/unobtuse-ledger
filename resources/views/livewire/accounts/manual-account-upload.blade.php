@@ -177,15 +177,18 @@
                                 @error('endingBalance') <span class="text-xs text-destructive">{{ $message }}</span> @enderror
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-card-foreground mb-2">Available Balance <span class="text-xs text-muted-foreground">(optional - credit cards only)</span></label>
-                                <input type="number" step="0.01" wire:model="availableBalance" placeholder="Leave blank if same as balance"
-                                       class="w-full px-4 py-2 bg-background border border-input rounded-[var(--radius-sm)] text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
-                                <p class="text-xs text-muted-foreground mt-1">Only for credit cards if different from current balance.</p>
+                                <label class="block text-sm font-medium text-card-foreground mb-2">Available Balance <span class="text-xs text-muted-foreground">(optional)</span></label>
+                                <input type="number" step="0.01" wire:model="availableBalance" placeholder="Clear if N/A"
+                                       class="w-full px-4 py-2 bg-background border border-input rounded-[var(--radius-sm)] text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                                       onfocus="if(this.value == '0') this.value = ''">
+                                <p class="text-xs text-muted-foreground mt-1">For credit cards only. Clear the 0 if not applicable.</p>
                             </div>
                             <div>
-                                <label class="block text-sm font-medium text-card-foreground mb-2">Credit Limit</label>
-                                <input type="number" step="0.01" wire:model="creditLimit" 
-                                       class="w-full px-4 py-2 bg-background border border-input rounded-[var(--radius-sm)] text-foreground focus:outline-none focus:ring-2 focus:ring-ring">
+                                <label class="block text-sm font-medium text-card-foreground mb-2">Credit Limit <span class="text-xs text-muted-foreground">(optional)</span></label>
+                                <input type="number" step="0.01" wire:model="creditLimit" placeholder="Clear if N/A"
+                                       class="w-full px-4 py-2 bg-background border border-input rounded-[var(--radius-sm)] text-foreground focus:outline-none focus:ring-2 focus:ring-ring"
+                                       onfocus="if(this.value == '0') this.value = ''">
+                                <p class="text-xs text-muted-foreground mt-1">Only for credit accounts. Clear the 0 if not applicable.</p>
                             </div>
                             <div>
                                 <label class="block text-sm font-medium text-card-foreground mb-2">Currency</label>
