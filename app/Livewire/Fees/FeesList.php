@@ -45,55 +45,15 @@ class FeesList extends Component
      * Fee type keywords for detection
      */
     protected array $feePatterns = [
-        'bank_fee' => [
-            'keywords' => ['bank fee', 'service fee', 'monthly fee', 'maintenance fee', 'account fee'],
-            'label' => 'Bank Fees',
-            'icon' => '🏦',
-        ],
-        'overdraft' => [
-            'keywords' => ['overdraft', 'nsf', 'insufficient funds', 'returned item'],
-            'label' => 'Overdraft Fees',
-            'icon' => '⚠️',
-        ],
-        'atm_fee' => [
-            'keywords' => ['atm fee', 'atm charge', 'withdrawal fee', 'atm withdrawal'],
-            'label' => 'ATM Fees',
-            'icon' => '🏧',
-        ],
         'late_fee' => [
-            'keywords' => ['late fee', 'late charge', 'late payment', 'penalty'],
+            'keywords' => ['late fee', 'late charge', 'late payment', 'penalty', 'past due', 'overdue'],
             'label' => 'Late Fees',
             'icon' => '⏰',
         ],
-        'foreign_transaction' => [
-            'keywords' => ['foreign transaction', 'international fee', 'currency conversion', 'fx fee'],
-            'label' => 'Foreign Transaction Fees',
-            'icon' => '🌍',
-        ],
-        'wire_transfer' => [
-            'keywords' => ['wire fee', 'wire transfer fee', 'transfer fee'],
-            'label' => 'Wire Transfer Fees',
-            'icon' => '💸',
-        ],
-        'credit_card_fee' => [
-            'keywords' => ['annual fee', 'card fee', 'credit card fee', 'membership fee'],
-            'label' => 'Credit Card Fees',
+        'annual_fee' => [
+            'keywords' => ['annual fee', 'yearly fee', 'membership fee', 'card fee'],
+            'label' => 'Annual Fees',
             'icon' => '💳',
-        ],
-        'interest_charge' => [
-            'keywords' => ['interest charge', 'finance charge', 'interest fee', 'apr charge'],
-            'label' => 'Interest Charges',
-            'icon' => '📈',
-        ],
-        'subscription_fee' => [
-            'keywords' => ['subscription fee', 'membership fee', 'monthly charge'],
-            'label' => 'Subscription Fees',
-            'icon' => '📱',
-        ],
-        'processing_fee' => [
-            'keywords' => ['processing fee', 'transaction fee', 'convenience fee', 'service charge'],
-            'label' => 'Processing Fees',
-            'icon' => '⚙️',
         ],
         'other_fee' => [
             'keywords' => ['fee', 'charge'],
@@ -180,32 +140,21 @@ class FeesList extends Component
     }
     
     /**
-     * Check if transaction is likely a fee
+     * Check if transaction is likely a fee (late or annual)
      */
     protected function isFeeTransaction(Transaction $transaction): bool
     {
         $searchText = strtolower($transaction->name . ' ' . $transaction->merchant_name . ' ' . $transaction->category);
         
-        // Common fee indicators
+        // Specific fee indicators for late and annual fees
         $feeIndicators = [
-            'fee', 'charge', 'interest', 'penalty', 'overdraft', 'nsf',
-            'atm', 'foreign transaction', 'wire', 'transfer fee',
-            'maintenance', 'service fee', 'annual fee', 'late fee',
-            'processing fee', 'convenience fee', 'finance charge'
+            'late fee', 'late charge', 'late payment', 'penalty', 
+            'past due', 'overdue', 'annual fee', 'yearly fee',
+            'membership fee', 'card fee'
         ];
         
         foreach ($feeIndicators as $indicator) {
             if (stripos($searchText, $indicator) !== false) {
-                return true;
-            }
-        }
-        
-        // Check category
-        if ($transaction->category) {
-            $categoryLower = strtolower($transaction->category);
-            if (stripos($categoryLower, 'fee') !== false || 
-                stripos($categoryLower, 'charge') !== false ||
-                stripos($categoryLower, 'interest') !== false) {
                 return true;
             }
         }

@@ -2,8 +2,8 @@
     <!-- Page Header -->
     <div class="flex items-center justify-between">
         <div>
-            <h2 class="text-3xl font-bold text-card-foreground">Fees & Charges</h2>
-            <p class="text-sm text-muted-foreground mt-1">Track all fees and charges across your accounts</p>
+            <h2 class="text-3xl font-bold text-card-foreground">Late & Annual Fees</h2>
+            <p class="text-sm text-muted-foreground mt-1">Track late payment fees, past due charges, and annual membership fees</p>
         </div>
     </div>
 
@@ -132,12 +132,12 @@
             <svg class="mx-auto h-16 w-16 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
             </svg>
-            <h3 class="mt-4 text-lg font-semibold text-card-foreground">No fees found</h3>
+            <h3 class="mt-4 text-lg font-semibold text-card-foreground">No late or annual fees found</h3>
             <p class="mt-2 text-sm text-muted-foreground">
                 @if($search || $feeTypeFilter !== 'all' || $accountFilter || $dateRange !== 'all')
                     Try adjusting your filters to see more results.
                 @else
-                    Great news! No fees detected in your transactions.
+                    Great news! No late or annual fees detected in your transactions.
                 @endif
             </p>
         </div>
