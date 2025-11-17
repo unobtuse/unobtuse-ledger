@@ -66,7 +66,7 @@
                 <p class="text-sm font-medium text-muted-foreground">Total Accounts</p>
                 <p class="text-3xl font-semibold text-card-foreground mt-1">{{ $summaryStats['total_count'] }}</p>
             </div>
-            <button @click="$dispatch('teller:initiate')"
+            <button wire:click="dispatch('initiateTellerConnect')"
                     class="mt-4 w-full inline-flex items-center justify-center px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius-md)] font-semibold text-sm hover:opacity-90 transition-all duration-150">
                 <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -150,7 +150,7 @@
             </p>
             @if(!$search && $typeFilter === 'all' && $statusFilter === 'all')
                 <div class="mt-6">
-                    <button @click="$dispatch('teller:initiate')" 
+                    <button wire:click="dispatch('initiateTellerConnect')" 
                             class="inline-flex items-center px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius-md)] font-semibold text-sm hover:opacity-90 transition-all duration-150">
                         <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
@@ -321,30 +321,3 @@
 
 <!-- Teller Connect Script -->
 <script src="https://cdn.teller.io/sdk/v1/connect.js"></script>
-<script>
-    // Listen for Teller Connect initiation
-    document.addEventListener('teller:initiate', () => {
-        // Find the TellerConnect Livewire component and dispatch the init action
-        const component = document.querySelector('[wire\\:id]');
-        if (component) {
-            // Dispatch Livewire action to initiate Teller Connect
-            Livewire.dispatch('initiateTellerConnect');
-        }
-    });
-    
-    // Listen for Teller enrollment success (fired by TellerConnect component)
-    document.addEventListener('tellerEnrollmentSuccess', (event) => {
-        const enrollmentToken = event.detail?.enrollmentToken;
-        if (enrollmentToken && typeof Livewire !== 'undefined') {
-            Livewire.dispatch('tellerEnrollmentSuccess', { enrollmentToken });
-        }
-    });
-    
-    // Listen for Teller errors
-    document.addEventListener('tellerEnrollmentError', (event) => {
-        const { errorCode, errorMessage } = event.detail || {};
-        if (typeof Livewire !== 'undefined') {
-            Livewire.dispatch('tellerEnrollmentError', { errorCode, errorMessage });
-        }
-    });
-</script>
