@@ -52,6 +52,8 @@ class Account extends Model
         'initial_loan_amount',
         'loan_interest_rate',
         'loan_term_months',
+        'loan_first_payment_date',
+        'loan_origination_fees',
         'currency',
         'mask',
         'account_number',

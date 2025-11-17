@@ -48,6 +48,8 @@ class AccountsList extends Component
     public string $initialLoanAmount = '';
     public string $loanInterestRate = '';
     public string $loanTermMonths = '';
+    public string $loanFirstPaymentDate = '';
+    public string $loanOriginationFees = '';
     
     // Expanded accounts (for card details)
     public array $expandedAccounts = [];
@@ -455,6 +457,8 @@ class AccountsList extends Component
         $this->initialLoanAmount = $account->initial_loan_amount ? (string) $account->initial_loan_amount : '';
         $this->loanInterestRate = $account->loan_interest_rate ? (string) $account->loan_interest_rate : '';
         $this->loanTermMonths = $account->loan_term_months ? (string) $account->loan_term_months : '';
+        $this->loanFirstPaymentDate = $account->loan_first_payment_date ? $account->loan_first_payment_date->format('Y-m-d') : '';
+        $this->loanOriginationFees = $account->loan_origination_fees ? (string) $account->loan_origination_fees : '';
         $this->showInitialLoanAmountModal = true;
     }
 
@@ -467,6 +471,8 @@ class AccountsList extends Component
             'initialLoanAmount' => 'required|numeric|min:0',
             'loanInterestRate' => 'nullable|numeric|min:0|max:100',
             'loanTermMonths' => 'nullable|integer|min:1|max:600',
+            'loanFirstPaymentDate' => 'nullable|date',
+            'loanOriginationFees' => 'nullable|numeric|min:0',
         ]);
 
         $account = Account::findOrFail($this->selectedAccountId);
@@ -474,6 +480,8 @@ class AccountsList extends Component
             'initial_loan_amount' => $this->initialLoanAmount > 0 ? $this->initialLoanAmount : null,
             'loan_interest_rate' => $this->loanInterestRate !== '' ? $this->loanInterestRate : null,
             'loan_term_months' => $this->loanTermMonths !== '' ? $this->loanTermMonths : null,
+            'loan_first_payment_date' => $this->loanFirstPaymentDate !== '' ? $this->loanFirstPaymentDate : null,
+            'loan_origination_fees' => $this->loanOriginationFees !== '' ? $this->loanOriginationFees : null,
         ]);
 
         $this->closeInitialLoanAmountModal();
@@ -490,6 +498,8 @@ class AccountsList extends Component
         $this->initialLoanAmount = '';
         $this->loanInterestRate = '';
         $this->loanTermMonths = '';
+        $this->loanFirstPaymentDate = '';
+        $this->loanOriginationFees = '';
     }
     
     /**

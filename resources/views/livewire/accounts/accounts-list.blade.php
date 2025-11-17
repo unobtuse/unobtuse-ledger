@@ -412,6 +412,33 @@
                                 <p class="mt-1 text-xs text-destructive">{{ $message }}</p>
                             @enderror
                         </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-card-foreground mb-2">First Payment Date <span class="text-xs text-muted-foreground">(optional)</span></label>
+                            <input type="date" 
+                                   wire:model="loanFirstPaymentDate" 
+                                   class="w-full px-4 py-2 bg-background border border-input rounded-[var(--radius-sm)] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-150">
+                            <p class="mt-1 text-xs text-muted-foreground">When first payment was made</p>
+                            @error('loanFirstPaymentDate')
+                                <p class="mt-1 text-xs text-destructive">{{ $message }}</p>
+                            @enderror
+                        </div>
+                        
+                        <div>
+                            <label class="block text-sm font-medium text-card-foreground mb-2">Origination Fees <span class="text-xs text-muted-foreground">(optional)</span></label>
+                            <div class="relative">
+                                <span class="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground">$</span>
+                                <input type="number" 
+                                       step="0.01"
+                                       wire:model="loanOriginationFees" 
+                                       placeholder="500.00"
+                                       class="w-full px-4 py-2 pl-8 bg-background border border-input rounded-[var(--radius-sm)] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-150">
+                            </div>
+                            <p class="mt-1 text-xs text-muted-foreground">Fees charged at origination</p>
+                            @error('loanOriginationFees')
+                                <p class="mt-1 text-xs text-destructive">{{ $message }}</p>
+                            @enderror
+                        </div>
                     </div>
                     <div class="flex items-center justify-end gap-3">
                         <button wire:click="closeInitialLoanAmountModal" 
