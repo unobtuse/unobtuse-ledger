@@ -18,16 +18,15 @@
 </div>
 
 @script
-<script>
 // Store config globally
-const tellerConnectConfig = @json($connectConfig);
+window.tellerConnectConfig = @json($connectConfig);
 
 // Listen for Livewire events
 Livewire.on('initiateTellerConnect', () => {
-    setTimeout(() => initializeTellerConnect(), 100);
+    setTimeout(() => window.initializeTellerConnect(), 100);
 });
 
-function initializeTellerConnect() {
+window.initializeTellerConnect = function() {
     // Ensure Teller SDK is loaded
     if (typeof window.Teller === 'undefined') {
         console.error('Teller Connect SDK not loaded');
@@ -35,14 +34,17 @@ function initializeTellerConnect() {
         return;
     }
     
-    if (!tellerConnectConfig) {
+    if (!window.tellerConnectConfig) {
         console.error('Teller Connect config not available');
         alert('Failed to load Teller configuration. Please try again.');
         return;
     }
     
     try {
-        const configData = typeof tellerConnectConfig === 'string' ? JSON.parse(tellerConnectConfig) : tellerConnectConfig;
+        let configData = window.tellerConnectConfig;
+        if (typeof configData === 'string') {
+            configData = JSON.parse(configData);
+        }
         
         console.log('Initializing Teller Connect with config:', configData);
         
@@ -52,7 +54,6 @@ function initializeTellerConnect() {
             environment: configData.environment,
             onSuccess: (enrollment) => {
                 console.log('Teller enrollment successful:', enrollment);
-                // Send enrollment token back to Livewire component
                 Livewire.dispatch('tellerEnrollmentSuccess', { enrollmentToken: enrollment.token });
             },
             onError: (error) => {
@@ -73,7 +74,6 @@ function initializeTellerConnect() {
         console.error('Failed to initialize Teller Connect:', err);
         alert('Failed to initialize bank linking. Please try again.');
     }
-}
-</script>
+};
 @endscript
 
