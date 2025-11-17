@@ -427,11 +427,20 @@ class ManualAccountUpload extends Component
      */
     public function saveManualAccount(): void
     {
+        // Debug log
+        Log::info('Attempting to save manual account', [
+            'institutionName' => $this->institutionName,
+            'accountName' => $this->accountName,
+            'accountType' => $this->accountType,
+            'endingBalance' => $this->endingBalance,
+            'has_transactions' => !empty($this->parsedTransactions),
+        ]);
+        
         $this->validate([
             'institutionName' => 'required|string|max:255',
             'accountName' => 'required|string|max:255',
             'accountType' => 'required|string|in:checking,savings,credit_card,investment,loan,auto_loan,mortgage,student_loan',
-            'endingBalance' => 'required|numeric',
+            'endingBalance' => 'nullable|numeric',
         ]);
         
         try {
