@@ -175,23 +175,25 @@ class ManualAccountUpload extends Component
             $this->parsedAccount = $data['account'];
             $this->parsedTransactions = $data['transactions'];
             
-            // Check for duplicates if updating existing account
+            // Check for duplicates against existing account (match on date + amount only)
             $this->duplicateTransactionIndices = [];
             if ($this->existingAccountId && $this->parsedTransactions) {
                 $account = Account::find($this->existingAccountId);
-                foreach ($this->parsedTransactions as $index => $txn) {
-                    if (empty($txn['date']) || empty($txn['description']) || !isset($txn['amount'])) {
-                        continue;
-                    }
-                    
-                    $existingTransaction = Transaction::where('account_id', $account->id)
-                        ->where('transaction_date', $txn['date'])
-                        ->where('amount', (float) $txn['amount'])
-                        ->where('name', $txn['description'])
-                        ->first();
-                    
-                    if ($existingTransaction) {
-                        $this->duplicateTransactionIndices[] = $index;
+                if ($account) {
+                    foreach ($this->parsedTransactions as $index => $txn) {
+                        if (empty($txn['date']) || !isset($txn['amount'])) {
+                            continue;
+                        }
+                        
+                        // Match on date + amount only (descriptions may vary between statement and screenshot)
+                        $existingTransaction = Transaction::where('account_id', $account->id)
+                            ->where('transaction_date', $txn['date'])
+                            ->where('amount', (float) $txn['amount'])
+                            ->first();
+                        
+                        if ($existingTransaction) {
+                            $this->duplicateTransactionIndices[] = $index;
+                        }
                     }
                 }
             }

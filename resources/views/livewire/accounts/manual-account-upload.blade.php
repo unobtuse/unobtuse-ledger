@@ -201,14 +201,14 @@
                     <!-- Transactions -->
                     @if($parsedTransactions && count($parsedTransactions) > 0)
                         <div>
-                            <h4 class="text-lg font-semibold text-card-foreground mb-4">
-                                Transactions ({{ count($parsedTransactions) }})
-                                <span class="text-sm font-normal text-muted-foreground ml-2">Click × to remove errors</span>
+                            <h4 class="text-lg font-semibold text-card-foreground mb-4 flex items-center flex-wrap gap-2">
+                                <span>Transactions ({{ count($parsedTransactions) }})</span>
                                 @if($duplicateTransactionIndices && count($duplicateTransactionIndices) > 0)
-                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 ml-2">
-                                        ⚠️ {{ count($duplicateTransactionIndices) }} duplicate(s) will be skipped
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-700 dark:text-yellow-300">
+                                        ⚠️ Duplicates Found ({{ count($duplicateTransactionIndices) }})
                                     </span>
                                 @endif
+                                <span class="text-sm font-normal text-muted-foreground">Click × to remove errors</span>
                             </h4>
                             <div class="bg-muted/30 rounded-[var(--radius-md)] overflow-hidden">
                                 <div class="max-h-96 overflow-y-auto">
@@ -227,23 +227,23 @@
                                                 @php
                                                     $isDuplicate = $duplicateTransactionIndices && in_array($index, $duplicateTransactionIndices);
                                                 @endphp
-                                                <tr class="hover:bg-muted/50 group {{ $isDuplicate ? 'opacity-50 bg-yellow-500/5' : '' }}">
-                                                    <td class="p-3 text-card-foreground relative">
+                                                <tr class="hover:bg-muted/50 group {{ $isDuplicate ? 'opacity-60 bg-yellow-500/5' : '' }}">
+                                                    <td class="p-3 text-card-foreground relative {{ $isDuplicate ? 'line-through' : '' }}">
                                                         {{ \Carbon\Carbon::parse($txn['date'])->format('M d, Y') }}
                                                         @if($isDuplicate)
                                                             <span class="absolute -left-2 top-1/2 -translate-y-1/2 text-yellow-600 dark:text-yellow-400" title="Duplicate - will be skipped">⚠️</span>
                                                         @endif
                                                     </td>
-                                                    <td class="p-3 text-card-foreground">
+                                                    <td class="p-3 text-card-foreground {{ $isDuplicate ? 'line-through' : '' }}">
                                                         {{ $txn['description'] }}
                                                         @if($isDuplicate)
-                                                            <span class="ml-2 text-xs text-yellow-600 dark:text-yellow-400">(Already exists)</span>
+                                                            <span class="ml-2 text-xs text-yellow-600 dark:text-yellow-400 no-underline">(Already exists)</span>
                                                         @endif
                                                     </td>
-                                                    <td class="p-3 text-right font-semibold {{ $txn['amount'] > 0 ? 'text-destructive' : 'text-chart-2' }}">
+                                                    <td class="p-3 text-right font-semibold {{ $txn['amount'] > 0 ? 'text-destructive' : 'text-chart-2' }} {{ $isDuplicate ? 'line-through' : '' }}">
                                                         ${{ number_format(abs($txn['amount']), 2) }}
                                                     </td>
-                                                    <td class="p-3 text-center">
+                                                    <td class="p-3 text-center {{ $isDuplicate ? 'line-through' : '' }}">
                                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $txn['type'] === 'debit' ? 'bg-destructive/20 text-destructive' : 'bg-chart-2/20 text-chart-2' }}">
                                                             {{ ucfirst($txn['type'] ?? 'debit') }}
                                                         </span>
