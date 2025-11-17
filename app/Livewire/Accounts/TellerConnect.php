@@ -25,20 +25,23 @@ class TellerConnect extends Component
     public ?string $error = null;
     public ?string $success = null;
 
-    private TellerService $tellerService;
-
-    /**
-     * Constructor with dependency injection
-     */
-    public function __construct(TellerService $tellerService)
-    {
-        parent::__construct();
-        $this->tellerService = $tellerService;
-    }
+    private ?TellerService $tellerService = null;
 
     public function mount(): void
     {
         $this->user = auth()->user();
+        $this->tellerService = app(TellerService::class);
+    }
+
+    /**
+     * Get the TellerService instance
+     */
+    private function getTellerService(): TellerService
+    {
+        if ($this->tellerService === null) {
+            $this->tellerService = app(TellerService::class);
+        }
+        return $this->tellerService;
     }
 
     /**
@@ -53,7 +56,7 @@ class TellerConnect extends Component
             $this->success = null;
 
             // Get configuration for Teller Connect
-            $config = $this->tellerService->initializeTellerConnect($this->user);
+            $config = $this->getTellerService()->initializeTellerConnect($this->user);
 
             // Store config as JSON for JavaScript
             $this->connectConfig = json_encode($config);
@@ -89,7 +92,7 @@ class TellerConnect extends Component
             ]);
 
             // Exchange enrollment token for access token
-            $result = $this->tellerService->exchangeToken($enrollmentToken);
+            $result = $this->getTellerService()->exchangeToken($enrollmentToken);
 
             if (!$result['success']) {
                 throw new \Exception($result['error'] ?? 'Failed to exchange token');
@@ -99,7 +102,7 @@ class TellerConnect extends Component
             $tellerAccountId = $result['accountId'];
 
             // Get account details from Teller
-            $accountDetails = $this->tellerService->getAccountDetails($accessToken, $tellerAccountId);
+            $accountDetails = $this->getTellerService()->getAccountDetails($accessToken, $tellerAccountId);
 
             if (!$accountDetails['success']) {
                 throw new \Exception('Failed to retrieve account details');
@@ -127,7 +130,7 @@ class TellerConnect extends Component
             ]);
 
             // Sync initial balance
-            $balanceResult = $this->tellerService->getBalance($accessToken, $tellerAccountId);
+            $balanceResult = $this->getTellerService()->getBalance($accessToken, $tellerAccountId);
 
             if ($balanceResult['success'] && isset($balanceResult['balance']['available'])) {
                 $dbAccount->update(['balance' => $balanceResult['balance']['available']]);
