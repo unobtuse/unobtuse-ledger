@@ -30,7 +30,7 @@ document.addEventListener('DOMContentLoaded', function() {
     
     window.initializeTellerConnect = function() {
         // Ensure Teller SDK is loaded
-        if (typeof window.Teller === 'undefined') {
+        if (typeof window.TellerConnect === 'undefined') {
             console.error('Teller Connect SDK not loaded');
             alert('Teller SDK failed to load. Please refresh the page.');
             return;
@@ -50,28 +50,28 @@ document.addEventListener('DOMContentLoaded', function() {
             
             console.log('Initializing Teller Connect with config:', configData);
             
-            // Initialize Teller Connect
-            window.Teller.init({
-                appId: configData.appId,
+            // Initialize Teller Connect using TellerConnect.setup()
+            window.tellerConnectInstance = window.TellerConnect.setup({
+                applicationId: configData.appId,
                 environment: configData.environment,
                 onSuccess: (enrollment) => {
                     console.log('Teller enrollment successful:', enrollment);
                     Livewire.dispatch('tellerEnrollmentSuccess', { enrollmentToken: enrollment.token });
                 },
-                onError: (error) => {
+                onExit: () => {
+                    console.log('Teller Connect closed');
+                },
+                onFailure: (error) => {
                     console.error('Teller enrollment error:', error);
                     Livewire.dispatch('tellerEnrollmentError', { 
                         errorCode: error.code || 'unknown_error',
                         errorMessage: error.message || 'An error occurred during enrollment'
                     });
-                },
-                onExit: () => {
-                    console.log('Teller Connect closed');
                 }
             });
             
             // Open the widget
-            window.Teller.open();
+            window.tellerConnectInstance.open();
         } catch (err) {
             console.error('Failed to initialize Teller Connect:', err);
             alert('Failed to initialize bank linking. Please try again.');
