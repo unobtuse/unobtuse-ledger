@@ -171,7 +171,7 @@ If month is visible but year is not shown, use {$year}.
     "institution_name": "Bank name (e.g., 'Chase', 'Bank of America')",
     "account_name": "Account name/type (e.g., 'Freedom Unlimited', 'Checking')",
     "account_number_last4": "Last 4 digits of account number",
-    "account_type": "credit_card, checking, savings, etc.",
+    "account_type": "credit_card, checking, savings, loan, auto_loan, mortgage, student_loan, investment",
     "statement_period_start": "YYYY-MM-DD",
     "statement_period_end": "YYYY-MM-DD",
     "ending_balance": 0.00,

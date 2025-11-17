@@ -327,7 +327,7 @@ class ManualAccountUpload extends Component
         $this->validate([
             'institutionName' => 'required|string|max:255',
             'accountName' => 'required|string|max:255',
-            'accountType' => 'required|string|in:checking,savings,credit_card,investment,loan',
+            'accountType' => 'required|string|in:checking,savings,credit_card,investment,loan,auto_loan,mortgage,student_loan',
             'endingBalance' => 'required|numeric',
         ]);
         

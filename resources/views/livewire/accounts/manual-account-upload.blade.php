@@ -181,7 +181,10 @@
                                     <option value="savings">Savings</option>
                                     <option value="credit_card">Credit Card</option>
                                     <option value="investment">Investment</option>
-                                    <option value="loan">Loan</option>
+                                    <option value="loan">Personal Loan</option>
+                                    <option value="auto_loan">Auto Loan</option>
+                                    <option value="mortgage">Mortgage</option>
+                                    <option value="student_loan">Student Loan</option>
                                 </select>
                             </div>
                             <div>
