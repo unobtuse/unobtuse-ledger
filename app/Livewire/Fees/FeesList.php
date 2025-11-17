@@ -278,19 +278,22 @@ class FeesList extends Component
             }
             
             if (!$grouped->has($feeType)) {
-                $grouped[$feeType] = [
+                $grouped->put($feeType, [
                     'type' => $feeType,
                     'label' => $this->feePatterns[$feeType]['label'] ?? 'Other Fees',
                     'icon' => $this->feePatterns[$feeType]['icon'] ?? '💰',
                     'transactions' => collect(),
                     'total' => 0,
                     'count' => 0,
-                ];
+                ]);
             }
             
-            $grouped[$feeType]['transactions']->push($transaction);
-            $grouped[$feeType]['total'] += (float) $transaction->amount;
-            $grouped[$feeType]['count']++;
+            // Get the group, modify it, and put it back
+            $group = $grouped->get($feeType);
+            $group['transactions']->push($transaction);
+            $group['total'] += (float) $transaction->amount;
+            $group['count']++;
+            $grouped->put($feeType, $group);
         }
         
         return $grouped->sortByDesc('total');
