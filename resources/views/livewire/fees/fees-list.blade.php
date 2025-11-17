@@ -214,7 +214,11 @@
                                     </div>
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
-                                    {{ $fee->account->display_name_without_mask ?? 'Unknown' }}
+                                    @if($fee->account)
+                                        {{ $fee->account->display_name_without_mask }}@if($fee->account->mask) - {{ $fee->account->mask }}@endif
+                                    @else
+                                        Unknown
+                                    @endif
                                 </td>
                                 <td class="px-6 py-4 whitespace-nowrap text-right text-sm font-semibold text-destructive">
                                     ${{ number_format($fee->amount, 2) }}
