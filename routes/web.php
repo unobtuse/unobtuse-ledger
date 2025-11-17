@@ -57,6 +57,9 @@ Route::middleware(['auth', 'verified'])->group(function () {
     // Recurring Payments
     Route::get('/recurring', \App\Livewire\RecurringPayments\RecurringPaymentsList::class)->name('recurring.index');
 
+    // Fees
+    Route::get('/fees', \App\Livewire\Fees\FeesList::class)->name('fees.index');
+
     // Bills
     Route::prefix('bills')->name('bills.')->group(function () {
         Route::get('/', [BillsController::class, 'index'])->name('index');
