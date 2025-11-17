@@ -102,7 +102,7 @@
                         @endif
                         
                         @if(in_array($account->account_type, ['loan', 'auto_loan', 'mortgage', 'student_loan']))
-                            <button wire:click="$parent.openInitialLoanAmountModal('{{ $account->id }}')" 
+                            <button wire:click="openInitialLoanAmountModal('{{ $account->id }}')" 
                                     class="w-full text-left px-4 py-2 text-sm text-popover-foreground hover:bg-muted transition-colors">
                                 Set Initial Loan Amount
                             </button>
