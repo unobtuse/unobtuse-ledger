@@ -25,12 +25,20 @@ class TellerConnect extends Component
     public ?string $error = null;
     public ?string $success = null;
 
-    protected TellerService $tellerService;
+    private TellerService $tellerService;
+
+    /**
+     * Constructor with dependency injection
+     */
+    public function __construct(TellerService $tellerService)
+    {
+        parent::__construct();
+        $this->tellerService = $tellerService;
+    }
 
     public function mount(): void
     {
         $this->user = auth()->user();
-        $this->tellerService = app(TellerService::class);
     }
 
     /**
