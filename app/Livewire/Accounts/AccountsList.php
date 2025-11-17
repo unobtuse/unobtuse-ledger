@@ -28,6 +28,7 @@ class AccountsList extends Component
     public string $typeFilter = 'all'; // 'all', 'checking', 'savings', 'credit_card', 'investment', 'loan', 'other'
     public string $statusFilter = 'all'; // 'all', 'active', 'syncing', 'failed', 'disabled'
     public bool $groupByInstitution = false;
+    public bool $groupByType = true; // Default to grouping by type
     
     // Modal states
     public bool $showNicknameModal = false;

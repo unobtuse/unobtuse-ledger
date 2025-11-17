@@ -176,10 +176,22 @@
         @if($groupByInstitution)
             <!-- Grouped by Institution -->
             @foreach($groupedAccounts as $institution => $institutionAccounts)
-                <div class="space-y-4">
+                <div class="space-y-4 mb-8">
                     <h3 class="text-lg font-semibold text-card-foreground">{{ $institution }}</h3>
                     <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                         @foreach($institutionAccounts as $account)
+                            @include('livewire.accounts.partials.account-card', ['account' => $account])
+                        @endforeach
+                    </div>
+                </div>
+            @endforeach
+        @elseif($groupByType)
+            <!-- Grouped by Type (Default) -->
+            @foreach($groupedByType as $typeGroup => $typeAccounts)
+                <div class="space-y-4 mb-8">
+                    <h3 class="text-lg font-semibold text-card-foreground">{{ $typeGroup }}</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        @foreach($typeAccounts as $account)
                             @include('livewire.accounts.partials.account-card', ['account' => $account])
                         @endforeach
                     </div>
