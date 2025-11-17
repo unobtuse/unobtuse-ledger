@@ -56,11 +56,15 @@ class ManualAccountUpload extends Component
         $this->parserService = $parserService;
     }
     
+    // Existing account ID for updates
+    public ?string $existingAccountId = null;
+    
     /**
      * Listen for events
      */
     protected $listeners = [
         'openManualUpload' => 'openUploadModal',
+        'openManualUploadForAccount' => 'openUploadModalForAccount',
         'account-created' => '$refresh',
     ];
     
@@ -69,13 +73,61 @@ class ManualAccountUpload extends Component
      */
     public function openUploadModal(): void
     {
+        $this->existingAccountId = null;
         $this->reset([
             'statementFile',
             'isProcessing',
             'errorMessage',
             'parsedAccount',
-            'parsedTransactions'
+            'parsedTransactions',
+            'institutionName',
+            'accountName',
+            'accountNumberLast4',
+            'accountType',
+            'currency',
+            'endingBalance',
+            'availableBalance',
+            'creditLimit',
         ]);
+        $this->showUploadModal = true;
+    }
+    
+    /**
+     * Open upload modal for existing account update
+     */
+    public function openUploadModalForAccount(string $accountId): void
+    {
+        $account = Account::where('id', $accountId)
+            ->where('user_id', auth()->id())
+            ->where('is_manual', true)
+            ->first();
+        
+        if (!$account) {
+            $this->errorMessage = 'Account not found';
+            return;
+        }
+        
+        // Store existing account ID
+        $this->existingAccountId = $accountId;
+        
+        // Pre-fill with existing account data
+        $this->institutionName = $account->institution_name;
+        $this->accountName = $account->account_name;
+        $this->accountNumberLast4 = $account->mask ?? '';
+        $this->accountType = $account->account_type;
+        $this->currency = $account->currency;
+        $this->endingBalance = (float) $account->balance;
+        $this->availableBalance = (float) ($account->available_balance ?? 0);
+        $this->creditLimit = (float) ($account->credit_limit ?? 0);
+        
+        $this->reset([
+            'statementFile',
+            'isProcessing',
+            'errorMessage',
+            'parsedAccount',
+            'parsedTransactions',
+        ]);
+        
         $this->showUploadModal = true;
     }
     
@@ -122,16 +174,20 @@ class ManualAccountUpload extends Component
             $this->parsedAccount = $data['account'];
             $this->parsedTransactions = $data['transactions'];
             
-            // Pre-fill form fields
-            $this->institutionName = $this->parsedAccount['institution_name'] ?? '';
-            $this->accountName = $this->parsedAccount['account_name'] ?? '';
+            // Pre-fill form fields (only if not updating existing account)
+            if (!$this->existingAccountId) {
+                $this->institutionName = $this->parsedAccount['institution_name'] ?? '';
+                $this->accountName = $this->parsedAccount['account_name'] ?? '';
+                
+                // Ensure only last 4 digits
+                $accountNumber = $this->parsedAccount['account_number_last4'] ?? '';
+                $this->accountNumberLast4 = substr($accountNumber, -4);
+                
+                $this->accountType = $this->parsedAccount['account_type'] ?? 'credit_card';
+                $this->currency = $this->parsedAccount['currency'] ?? 'USD';
+            }
             
-            // Ensure only last 4 digits
-            $accountNumber = $this->parsedAccount['account_number_last4'] ?? '';
-            $this->accountNumberLast4 = substr($accountNumber, -4);
-            
-            $this->accountType = $this->parsedAccount['account_type'] ?? 'credit_card';
-            $this->currency = $this->parsedAccount['currency'] ?? 'USD';
+            // Always update balance info from parsed statement
             $this->endingBalance = (float) ($this->parsedAccount['ending_balance'] ?? 0);
             
             // Only set available balance if it's actually present and non-zero (leave empty otherwise)
@@ -205,8 +261,23 @@ class ManualAccountUpload extends Component
         try {
             DB::beginTransaction();
             
-            // Create manual account
-            $account = Account::create([
+            // Update existing account or create new one
+            if ($this->existingAccountId) {
+                $account = Account::where('id', $this->existingAccountId)
+                    ->where('user_id', auth()->id())
+                    ->where('is_manual', true)
+                    ->firstOrFail();
+                
+                // Update account details
+                $account->update([
+                    'balance' => $this->endingBalance,
+                    'available_balance' => ($this->availableBalance > 0 && $this->availableBalance != $this->endingBalance) ? $this->availableBalance : null,
+                    'credit_limit' => $this->creditLimit > 0 ? $this->creditLimit : null,
+                    'last_synced_at' => now(),
+                ]);
+            } else {
+                // Create new manual account
+                $account = Account::create([
                 'user_id' => auth()->id(),
                 'institution_name' => $this->institutionName,
                 'account_name' => $this->accountName,
@@ -221,7 +292,8 @@ class ManualAccountUpload extends Component
                 'last_synced_at' => now(),
                 'is_active' => true,
                 'is_manual' => true,
-            ]);
+                ]);
+            }
             
             // Create transactions with duplicate detection
             $transactionCount = 0;
@@ -264,7 +336,12 @@ class ManualAccountUpload extends Component
             
             DB::commit();
             
-            $message = "Manual account '{$this->accountName}' created with {$transactionCount} transactions!";
+            if ($this->existingAccountId) {
+                $message = "Account '{$this->accountName}' updated with {$transactionCount} new transactions!";
+            } else {
+                $message = "Manual account '{$this->accountName}' created with {$transactionCount} transactions!";
+            }
+            
             if ($duplicateCount > 0) {
                 $message .= " ({$duplicateCount} duplicates skipped)";
             }
