@@ -634,6 +634,47 @@ class AccountsList extends Component
     }
     
     /**
+     * Get accounts grouped by type
+     */
+    protected function getGroupedByType(): array
+    {
+        $accounts = $this->getAccounts();
+        $grouped = [];
+        
+        // Define group order
+        $groupOrder = [
+            'Checking & Savings' => 1,
+            'Loans' => 2,
+            'Credit Cards' => 3,
+            'Investments' => 4,
+            'Other' => 5,
+        ];
+        
+        foreach ($accounts as $account) {
+            // Determine group based on account type
+            $group = match($account->account_type) {
+                'checking', 'savings' => 'Checking & Savings',
+                'loan', 'auto_loan', 'mortgage', 'student_loan' => 'Loans',
+                'credit_card' => 'Credit Cards',
+                'investment' => 'Investments',
+                default => 'Other'
+            };
+            
+            if (!isset($grouped[$group])) {
+                $grouped[$group] = [];
+            }
+            $grouped[$group][] = $account;
+        }
+        
+        // Sort groups by predefined order
+        uksort($grouped, function($a, $b) use ($groupOrder) {
+            return ($groupOrder[$a] ?? 99) <=> ($groupOrder[$b] ?? 99);
+        });
+        
+        return $grouped;
+    }
+    
+    /**
      * Render the component
      */
     public function render(): View
@@ -641,6 +682,7 @@ class AccountsList extends Component
         return view('livewire.accounts.accounts-list', [
             'accounts' => $this->getAccounts(),
             'groupedAccounts' => $this->getGroupedAccounts(),
+            'groupedByType' => $this->getGroupedByType(),
             'summaryStats' => $this->getSummaryStats(),
             'selectedAccount' => $this->getSelectedAccount(),
         ]);
