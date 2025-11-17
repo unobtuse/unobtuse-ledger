@@ -221,12 +221,26 @@ class ManualAccountUpload extends Component
                 'is_manual' => true,
             ]);
             
-            // Create transactions
+            // Create transactions with duplicate detection
             $transactionCount = 0;
+            $duplicateCount = 0;
+            
             if ($this->parsedTransactions && is_array($this->parsedTransactions)) {
                 foreach ($this->parsedTransactions as $txn) {
                     if (empty($txn['date']) || empty($txn['description']) || !isset($txn['amount'])) {
                         continue; // Skip invalid transactions
+                    }
+                    
+                    // Check for duplicate transaction (same account, date, amount, description)
+                    $existingTransaction = Transaction::where('account_id', $account->id)
+                        ->where('transaction_date', $txn['date'])
+                        ->where('amount', (float) $txn['amount'])
+                        ->where('name', $txn['description'])
+                        ->first();
+                    
+                    if ($existingTransaction) {
+                        $duplicateCount++;
+                        continue; // Skip duplicate
                     }
                     
                     Transaction::create([
