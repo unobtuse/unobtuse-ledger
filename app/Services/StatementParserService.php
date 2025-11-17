@@ -200,11 +200,18 @@ PROMPT;
      */
     protected function parseAIResponse(string $content): ?array
     {
+        // Remove markdown code blocks if present (```json ... ```)
+        $content = preg_replace('/```json\s*/s', '', $content);
+        $content = preg_replace('/```\s*$/s', '', $content);
+        
         // Try to find JSON in the response
         $jsonStart = strpos($content, '{');
         $jsonEnd = strrpos($content, '}');
         
         if ($jsonStart === false || $jsonEnd === false) {
+            Log::error('No JSON found in AI response', [
+                'content_preview' => substr($content, 0, 200)
+            ]);
             return null;
         }
         
