@@ -1,6 +1,6 @@
 <div align="center">
 
-![Unobtuse Ledger](logos/unobtuse-ledger-white-logo.svg)
+![Unobtuse Ledger](App-Logos/Unobtuse-Ledger-Combo-Icon-Text-Dark-Mode.svg)
 
 # Unobtuse Ledger
 
