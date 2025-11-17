@@ -176,10 +176,15 @@ class ManualAccountUpload extends Component
             $this->parsedTransactions = $data['transactions'];
             
             // Log what AI extracted
+            $txnCount = count($this->parsedTransactions ?? []);
+            $firstFive = array_slice($this->parsedTransactions ?? [], 0, 5);
+            $lastTen = $txnCount > 10 ? array_slice($this->parsedTransactions ?? [], -10) : [];
+            
             Log::info('AI extracted data', [
                 'account' => $this->parsedAccount,
-                'transaction_count' => count($this->parsedTransactions ?? []),
-                'sample_transactions' => array_slice($this->parsedTransactions ?? [], 0, 5) // First 5 for comparison
+                'transaction_count' => $txnCount,
+                'first_5_transactions' => $firstFive,
+                'last_10_transactions' => $lastTen // October transactions likely here
             ]);
             
             // Check for duplicates against existing account (match on date + amount only)
