@@ -254,7 +254,24 @@ class ManualAccountUpload extends Component
             // Pre-fill form fields (only if not updating existing account)
             if (!$this->existingAccountId) {
                 $this->institutionName = $this->parsedAccount['institution_name'] ?? '';
-                $this->accountName = $this->parsedAccount['account_name'] ?? '';
+                
+                // If account name is empty, create a default based on account type
+                $accountName = $this->parsedAccount['account_name'] ?? '';
+                if (empty($accountName)) {
+                    $accountType = $this->parsedAccount['account_type'] ?? '';
+                    $accountName = match($accountType) {
+                        'auto_loan' => 'Auto Loan',
+                        'mortgage' => 'Mortgage',
+                        'student_loan' => 'Student Loan',
+                        'loan' => 'Personal Loan',
+                        'credit_card' => 'Credit Card',
+                        'checking' => 'Checking',
+                        'savings' => 'Savings',
+                        'investment' => 'Investment Account',
+                        default => 'Account'
+                    };
+                }
+                $this->accountName = $accountName;
                 
                 // Ensure only last 4 digits
                 $accountNumber = $this->parsedAccount['account_number_last4'] ?? '';
