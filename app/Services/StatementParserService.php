@@ -11,15 +11,15 @@ use Illuminate\Support\Facades\Storage;
 /**
  * Statement Parser Service
  * 
- * Uses AI vision (Google Gemini 2.5 Pro) to parse bank statements from PDFs or images
+ * Uses AI vision (Google Gemini 1.5 Flash) to parse bank statements from PDFs or images
  * and extract account information and transactions.
  * 
- * FREE TIER: 50 requests per day with Gemini 2.5 Pro (most advanced model)
+ * FREE TIER: 1,500 requests per day with Gemini 1.5 Flash (fast and reliable)
  */
 class StatementParserService
 {
     protected string $apiKey;
-    protected string $model = 'gemini-2.5-pro'; // Most advanced model with vision
+    protected string $model = 'gemini-1.5-flash'; // Fast model with high capacity
     protected string $apiUrl = 'https://generativelanguage.googleapis.com/v1beta/models';
     
     public function __construct()
