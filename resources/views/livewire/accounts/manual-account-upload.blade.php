@@ -124,8 +124,8 @@
                 <div class="sticky top-0 bg-card border-b border-border p-6 z-10">
                     <div class="flex items-start justify-between">
                         <div>
-                            <h3 class="text-2xl font-semibold text-card-foreground">Review Parsed Data</h3>
-                            <p class="text-sm text-muted-foreground mt-1">Review and edit the AI-extracted information before saving</p>
+                            <h3 class="text-2xl font-semibold text-card-foreground">Review & Remove Errors</h3>
+                            <p class="text-sm text-muted-foreground mt-1">Review AI-extracted data and remove any incorrect transactions before saving</p>
                         </div>
                         <button wire:click="closePreviewModal" class="text-muted-foreground hover:text-card-foreground">
                             <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -198,6 +198,7 @@
                         <div>
                             <h4 class="text-lg font-semibold text-card-foreground mb-4">
                                 Transactions ({{ count($parsedTransactions) }})
+                                <span class="text-sm font-normal text-muted-foreground ml-2">Click × to remove errors</span>
                             </h4>
                             <div class="bg-muted/30 rounded-[var(--radius-md)] overflow-hidden">
                                 <div class="max-h-96 overflow-y-auto">
@@ -208,11 +209,12 @@
                                                 <th class="text-left p-3 text-xs font-medium text-muted-foreground uppercase">Description</th>
                                                 <th class="text-right p-3 text-xs font-medium text-muted-foreground uppercase">Amount</th>
                                                 <th class="text-center p-3 text-xs font-medium text-muted-foreground uppercase">Type</th>
+                                                <th class="text-center p-3 text-xs font-medium text-muted-foreground uppercase">Action</th>
                                             </tr>
                                         </thead>
                                         <tbody class="divide-y divide-border">
                                             @foreach($parsedTransactions as $index => $txn)
-                                                <tr class="hover:bg-muted/50">
+                                                <tr class="hover:bg-muted/50 group">
                                                     <td class="p-3 text-card-foreground">{{ \Carbon\Carbon::parse($txn['date'])->format('M d, Y') }}</td>
                                                     <td class="p-3 text-card-foreground">{{ $txn['description'] }}</td>
                                                     <td class="p-3 text-right font-semibold {{ $txn['amount'] > 0 ? 'text-destructive' : 'text-chart-2' }}">
@@ -222,6 +224,16 @@
                                                         <span class="inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium {{ $txn['type'] === 'debit' ? 'bg-destructive/20 text-destructive' : 'bg-chart-2/20 text-chart-2' }}">
                                                             {{ ucfirst($txn['type'] ?? 'debit') }}
                                                         </span>
+                                                    </td>
+                                                    <td class="p-3 text-center">
+                                                        <button 
+                                                            wire:click="removeTransaction({{ $index }})"
+                                                            class="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                                                            title="Remove this transaction">
+                                                            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                                                            </svg>
+                                                        </button>
                                                     </td>
                                                 </tr>
                                             @endforeach

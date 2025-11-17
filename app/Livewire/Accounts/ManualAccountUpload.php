@@ -169,6 +169,18 @@ class ManualAccountUpload extends Component
     }
     
     /**
+     * Remove a transaction from the list
+     */
+    public function removeTransaction(int $index): void
+    {
+        if (isset($this->parsedTransactions[$index])) {
+            unset($this->parsedTransactions[$index]);
+            // Re-index array to maintain sequential keys
+            $this->parsedTransactions = array_values($this->parsedTransactions);
+        }
+    }
+    
+    /**
      * Save manual account and transactions
      */
     public function saveManualAccount(): void
