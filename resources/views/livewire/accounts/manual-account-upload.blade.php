@@ -265,6 +265,11 @@
                                                         @if($isDuplicate)
                                                             <span class="ml-2 text-xs text-yellow-600 dark:text-yellow-400 no-underline">(Already exists)</span>
                                                         @endif
+                                                        @if($hasSuggestion)
+                                                            <div class="text-xs text-blue-600 dark:text-blue-400 mt-1">
+                                                                Found in: {{ $suggestedDates[$index]['from_account'] }}
+                                                            </div>
+                                                        @endif
                                                     </td>
                                                     <td class="p-3 text-right font-semibold {{ $txn['amount'] > 0 ? 'text-destructive' : 'text-chart-2' }} {{ $isDuplicate ? 'line-through' : '' }}">
                                                         ${{ number_format(abs($txn['amount']), 2) }}
