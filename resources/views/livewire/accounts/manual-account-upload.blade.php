@@ -317,6 +317,18 @@
 
                 <!-- Modal Footer -->
                 <div class="sticky bottom-0 bg-card border-t border-border p-6">
+                    <!-- Show validation errors -->
+                    @if ($errors->any())
+                        <div class="mb-4 p-3 bg-destructive/10 border border-destructive/20 rounded-md">
+                            <p class="text-sm text-destructive font-medium">Please fix the following errors:</p>
+                            <ul class="mt-2 text-xs text-destructive list-disc list-inside">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
+                    @endif
+                    
                     <div class="flex items-center justify-end gap-3">
                         <button 
                             wire:click="closePreviewModal" 
@@ -326,8 +338,11 @@
                         </button>
                         <button 
                             wire:click="saveManualAccount" 
+                            wire:loading.attr="disabled"
+                            wire:loading.class="opacity-50 cursor-not-allowed"
                             class="px-6 py-2 bg-primary text-primary-foreground rounded-[var(--radius-md)] font-semibold text-sm hover:opacity-90 transition-all duration-150">
-                            Save Account
+                            <span wire:loading.remove>Save Account</span>
+                            <span wire:loading>Saving...</span>
                         </button>
                     </div>
                 </div>
