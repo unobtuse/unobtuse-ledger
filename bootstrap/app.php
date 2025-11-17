@@ -11,9 +11,10 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware): void {
-        // Register Plaid webhook verification middleware
+        // Register middleware aliases
         $middleware->alias([
             'verify-plaid-webhook' => \App\Http\Middleware\VerifyPlaidWebhook::class,
+            'admin' => \App\Http\Middleware\EnsureUserIsAdmin::class,
         ]);
     })
     ->withExceptions(function (Exceptions $exceptions): void {

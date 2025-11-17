@@ -7,9 +7,13 @@
 
     <title>{{ $title ?? config('app.name') }}</title>
 
+    @php($favicon = asset('logos/unobtuse-ledger-icon.svg') . '?v=20251106')
+
     <!-- Favicons -->
-    <link rel="icon" type="image/svg+xml" href="{{ asset('logos/unobtuse-ledger-icon.svg') }}">
-    <link rel="apple-touch-icon" href="{{ asset('logos/unobtuse-ledger-icon.svg') }}">
+    <link rel="icon" type="image/svg+xml" sizes="any" href="{{ $favicon }}">
+    <link rel="shortcut icon" type="image/svg+xml" sizes="any" href="{{ $favicon }}">
+    <link rel="apple-touch-icon" href="{{ $favicon }}">
+    <link rel="mask-icon" href="{{ $favicon }}" color="oklch(0.205 0 0)">
 
     <!-- Geist Font -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -110,6 +114,19 @@
                         </svg>
                         Accounts
                     </a>
+
+                    @if(auth()->check() && auth()->user()->isAdmin())
+                        <div class="pt-4 mt-4 border-t border-sidebar-border">
+                            <p class="px-3 text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">Admin</p>
+                            <a href="{{ route('dashboard.generate') }}" 
+                               class="flex items-center px-3 py-2.5 text-sm font-medium rounded-lg transition-colors {{ request()->routeIs('dashboard.generate') ? 'bg-sidebar-accent text-sidebar-accent-foreground' : 'text-sidebar-foreground hover:bg-sidebar-accent hover:text-sidebar-accent-foreground' }}">
+                                <svg class="w-5 h-5 mr-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                </svg>
+                                Generate Data
+                            </a>
+                        </div>
+                    @endif
                 </nav>
 
                 <!-- User Menu -->
@@ -216,6 +233,7 @@
     </div>
 
     @livewireScripts
+    @stack('scripts')
 </body>
 </html>
 

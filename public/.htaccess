@@ -5,6 +5,10 @@
 
     RewriteEngine On
 
+    # Ensure all favicon requests resolve to the SVG icon
+    RewriteCond %{REQUEST_URI} ^/favicon\.ico$
+    RewriteRule ^favicon\.ico$ /logos/unobtuse-ledger-icon.svg [L,R=301]
+
     # Handle Authorization Header
     RewriteCond %{HTTP:Authorization} .
     RewriteRule .* - [E=HTTP_AUTHORIZATION:%{HTTP:Authorization}]

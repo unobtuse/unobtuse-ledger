@@ -7,9 +7,13 @@
 
     <title>{{ $title ?? config('app.name') }}</title>
 
+    @php($favicon = asset('logos/unobtuse-ledger-icon.svg') . '?v=20251106')
+
     <!-- Favicons -->
-    <link rel="icon" type="image/svg+xml" href="{{ asset('logos/unobtuse-ledger-icon.svg') }}">
-    <link rel="apple-touch-icon" href="{{ asset('logos/unobtuse-ledger-icon.svg') }}">
+    <link rel="icon" type="image/svg+xml" sizes="any" href="{{ $favicon }}">
+    <link rel="shortcut icon" type="image/svg+xml" sizes="any" href="{{ $favicon }}">
+    <link rel="apple-touch-icon" href="{{ $favicon }}">
+    <link rel="mask-icon" href="{{ $favicon }}" color="oklch(0.205 0 0)">
 
     <!-- Geist Font (Design System) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">

@@ -44,6 +44,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'provider',
         'preferences',
         'email_verified_at',
+        'is_admin',
     ];
 
     /**
@@ -70,6 +71,7 @@ class User extends Authenticatable implements MustVerifyEmail
             'password' => 'hashed',
             'preferences' => 'array',
             'two_factor_confirmed_at' => 'datetime',
+            'is_admin' => 'boolean',
         ];
     }
 
@@ -161,7 +163,18 @@ class User extends Authenticatable implements MustVerifyEmail
     }
 
     /**
-     * Get the user's active pay schedule.
+     * Get the user's active pay schedules (multiple).
+     */
+    public function activePaySchedules()
+    {
+        return $this->hasMany(PaySchedule::class)->where('is_active', true);
+    }
+
+    /**
+     * Get the user's active pay schedule (single, for backward compatibility).
+     * Returns the first active schedule.
+     * 
+     * @deprecated Use activePaySchedules() for multiple schedules support
      */
     public function activePaySchedule()
     {
@@ -183,5 +196,15 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return $this->hasOne(Budget::class)
                     ->where('month', now()->format('Y-m'));
+    }
+
+    /**
+     * Check if user is an admin.
+     *
+     * @return bool
+     */
+    public function isAdmin(): bool
+    {
+        return (bool) ($this->is_admin ?? false);
     }
 }

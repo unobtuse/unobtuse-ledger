@@ -19,9 +19,13 @@
     <meta property="twitter:title" content="Unobtuse Ledger - Never Miss Another Bill Payment">
     <meta property="twitter:description" content="AI-powered personal finance management. Save $500+/year.">
 
+    @php($favicon = asset('logos/unobtuse-ledger-icon.svg') . '?v=20251106')
+
     <!-- Favicons -->
-    <link rel="icon" type="image/svg+xml" href="{{ asset('logos/unobtuse-ledger-icon.svg') }}">
-    <link rel="apple-touch-icon" href="{{ asset('logos/unobtuse-ledger-icon.svg') }}">
+    <link rel="icon" type="image/svg+xml" sizes="any" href="{{ $favicon }}">
+    <link rel="shortcut icon" type="image/svg+xml" sizes="any" href="{{ $favicon }}">
+    <link rel="apple-touch-icon" href="{{ $favicon }}">
+    <link rel="mask-icon" href="{{ $favicon }}" color="oklch(0.205 0 0)">
 
         <!-- Fonts -->
         <link rel="preconnect" href="https://fonts.bunny.net">
@@ -114,14 +118,14 @@
                     <!-- CTA Buttons -->
                     <div class="flex flex-col sm:flex-row gap-4 justify-center lg:justify-start mb-8">
                         @auth
-                            <a href="{{ url('/dashboard') }}" class="px-8 py-4 font-semibold text-lg transition transform hover:-translate-y-0.5" style="background-color: var(--color-primary); color: var(--color-primary-foreground); border-radius: var(--radius-default); box-shadow: var(--shadow-elevated);">
+                            <a href="{{ url('/dashboard') }}" class="px-8 py-4 font-semibold text-lg transition-all duration-200 transform hover:-translate-y-1 hover:scale-105 hover:shadow-lg" style="background-color: var(--color-primary); color: var(--color-primary-foreground); border-radius: var(--radius-default); box-shadow: var(--shadow-elevated);">
                                 Go to Dashboard →
                             </a>
                         @else
-                            <a href="{{ route('register') }}" class="px-8 py-4 font-semibold text-lg transition transform hover:-translate-y-0.5" style="background-color: var(--color-primary); color: var(--color-primary-foreground); border-radius: var(--radius-default); box-shadow: var(--shadow-elevated);">
+                            <a href="{{ route('register') }}" class="px-8 py-4 font-semibold text-lg transition-all duration-200 transform hover:-translate-y-1 hover:scale-105 hover:shadow-lg" style="background-color: var(--color-primary); color: var(--color-primary-foreground); border-radius: var(--radius-default); box-shadow: var(--shadow-elevated);">
                                 Start Free Trial →
                             </a>
-                            <a href="#features" class="px-8 py-4 font-semibold text-lg transition" style="background-color: var(--color-card); color: var(--color-card-foreground); border: 1px solid var(--color-border); border-radius: var(--radius-default);">
+                            <a href="#features" class="px-8 py-4 font-semibold text-lg transition-all duration-200 hover:bg-muted hover:-translate-y-1" style="background-color: var(--color-card); color: var(--color-card-foreground); border: 1px solid var(--color-border); border-radius: var(--radius-default);">
                                 See How It Works
                             </a>
                     @endauth
@@ -152,71 +156,77 @@
 
                 <!-- Right: Hero Image / App Preview -->
                 <div class="relative">
-                    <div class="relative z-10 style="background-color: var(--color-card);" rounded-2xl shadow-2xl p-6 border style="border-color: var(--color-border);"">
+                    <div class="relative z-10 bg-card border border-border rounded-[var(--radius-lg)] shadow-elevated p-6 md:p-8">
                         <!-- Mock Dashboard Preview -->
-                        <div class="space-y-4">
-                            <div class="flex items-center justify-between pb-4 border-b style="border-color: var(--color-border);"">
-                                <h3 class="text-lg font-semibold">Bills Due Before Next Paycheck</h3>
-                                <span class="text-sm text-gray-500">3 days away</span>
+                        <div class="space-y-5">
+                            <div class="flex items-center justify-between pb-4 border-b border-border">
+                                <h3 class="text-lg font-semibold text-card-foreground">Bills Due Before Next Paycheck</h3>
+                                <span class="text-sm text-muted-foreground">3 days away</span>
                             </div>
-                            
+
                             <div class="space-y-3">
-                                <div class="flex items-center justify-between p-4 style="background-color: var(--color-muted); border-color: var(--color-chart-5);" rounded-lg border ">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold" style="background-color: var(--color-chart-5); color: white;">!</div>
+                                <div class="flex items-center justify-between p-4 bg-muted border border-chart-5/30 rounded-[var(--radius-md)]">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-semibold bg-chart-5/20 text-chart-5">!</div>
                                         <div>
-                                            <p class="font-medium">Credit Card Payment</p>
-                                            <p class="text-sm style="color: var(--color-muted-foreground);"">Due Nov 8</p>
+                                            <p class="font-medium text-card-foreground">Credit Card Payment</p>
+                                            <p class="text-sm text-muted-foreground">Due Nov 8</p>
                                         </div>
                                     </div>
-                                    <span class="font-bold text-lg">$350</span>
+                                    <span class="font-bold text-lg text-card-foreground">$350</span>
                                 </div>
 
-                                <div class="flex items-center justify-between p-4 style="background-color: var(--color-muted); border-color: var(--color-chart-4);" rounded-lg border ">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold" style="background-color: var(--color-chart-4); color: white;">⚡</div>
+                                <div class="flex items-center justify-between p-4 bg-muted border border-chart-4/30 rounded-[var(--radius-md)]">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-semibold bg-chart-4/20 text-chart-4">⚡</div>
                                         <div>
-                                            <p class="font-medium">Electric Bill</p>
-                                            <p class="text-sm style="color: var(--color-muted-foreground);"">Due Nov 10</p>
+                                            <p class="font-medium text-card-foreground">Electric Bill</p>
+                                            <p class="text-sm text-muted-foreground">Due Nov 10</p>
                                         </div>
                                     </div>
-                                    <span class="font-bold text-lg">$120</span>
+                                    <span class="font-bold text-lg text-card-foreground">$120</span>
                                 </div>
 
-                                <div class="flex items-center justify-between p-4 style="background-color: var(--color-muted); border-color: var(--color-chart-2);" rounded-lg border ">
-                                    <div class="flex items-center space-x-3">
-                                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-bold" style="background-color: var(--color-chart-2); color: white;">✓</div>
+                                <div class="flex items-center justify-between p-4 bg-muted border border-chart-2/30 rounded-[var(--radius-md)]">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-10 h-10 rounded-full flex items-center justify-center font-semibold bg-chart-2/20 text-chart-2">✓</div>
                                         <div>
-                                            <p class="font-medium">Internet</p>
-                                            <p class="text-sm style="color: var(--color-muted-foreground);"">Paid</p>
+                                            <p class="font-medium text-card-foreground">Internet</p>
+                                            <p class="text-sm text-muted-foreground">Paid</p>
                                         </div>
                                     </div>
-                                    <span class="font-bold text-lg style="color: var(--color-muted-foreground);" line-through">$80</span>
+                                    <span class="font-bold text-lg text-muted-foreground line-through">$80</span>
                                 </div>
                             </div>
 
-                            <div class="pt-4 border-t style="border-color: var(--color-border);"">
+                            <div class="pt-4 border-t border-border">
                                 <div class="flex justify-between items-center mb-2">
-                                    <span class="style="color: var(--color-muted-foreground);"">Remaining Budget:</span>
+                                    <span class="text-sm text-muted-foreground">Remaining Budget:</span>
                                     <span class="text-2xl font-bold text-chart-2">$1,230</span>
                                 </div>
-                                <div class="text-sm text-center" style="color: var(--color-muted-foreground);">After bills, before next paycheck</div>
+                                <div class="text-sm text-center text-muted-foreground">After bills, before next paycheck</div>
                             </div>
                         </div>
                     </div>
 
                     <!-- Floating Badges -->
-                    <div class="absolute -left-4 top-20 style="background-color: var(--color-card);" rounded-lg shadow-lg p-4 border style="border-color: var(--color-border);" animate-bounce">
-                        <div class="text-sm font-medium style="color: var(--color-muted-foreground);"">Saved this year</div>
-                        <div class="text-2xl font-bold text-chart-2">$816</div>
+                    <div class="absolute -left-4 top-20 z-30">
+                        <div class="bg-card border border-border rounded-[var(--radius-md)] shadow-lg p-4 animate-bounce">
+                            <div class="space-y-1">
+                                <div class="text-sm font-medium text-muted-foreground">Saved this year</div>
+                                <div class="text-2xl font-bold text-chart-2">$816</div>
+                            </div>
+                        </div>
                     </div>
 
-                    <div class="absolute -right-4 bottom-20 style="background-color: var(--color-card);" rounded-lg shadow-lg p-4 border style="border-color: var(--color-border);"">
-                        <div class="flex items-center space-x-2">
-                            <svg class="w-5 h-5 text-chart-2" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            <span class="font-medium">No late fees in 6 months!</span>
+                    <div class="absolute -right-4 bottom-20 z-30">
+                        <div class="bg-card border border-border rounded-[var(--radius-md)] shadow-lg p-4 animate-pulse">
+                            <div class="flex items-center gap-2">
+                                <svg class="w-5 h-5 text-chart-2" fill="currentColor" viewBox="0 0 20 20">
+                                    <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                                </svg>
+                                <span class="font-medium text-card-foreground">No late fees in 6 months!</span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -363,65 +373,65 @@
     <section class="py-20 px-4 sm:px-6 lg:px-8">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-3xl sm:text-4xl font-bold style="color: var(--color-foreground);" mb-4">
+                <h2 class="text-3xl sm:text-4xl font-bold text-foreground mb-4 animate-fade-in">
                     Everything You Need to Take Control
                 </h2>
-                <p class="text-xl style="color: var(--color-muted-foreground);"">
+                <p class="text-xl text-muted-foreground animate-fade-in-delay">
                     Powerful features that save you time, money, and stress.
                 </p>
             </div>
 
             <div class="grid md:grid-cols-2 lg:grid-cols-3 gap-8">
                 <!-- Feature 1 -->
-                <div class="style="background-color: var(--color-card);" rounded-xl p-8 border style="border-color: var(--color-border);" hover:shadow-lg transition">
-                    <div class="text-4xl mb-4">📅</div>
-                    <h3 class="text-xl font-bold style="color: var(--color-foreground);" mb-3">Bill Calendar</h3>
-                    <p class="style="color: var(--color-muted-foreground);"">
+                <div class="bg-card border border-border rounded-[var(--radius-lg)] p-8 hover-lift hover-glow transition-all duration-300 animate-scale-in">
+                    <div class="text-4xl mb-4 hover-scale inline-block">📅</div>
+                    <h3 class="text-xl font-bold text-card-foreground mb-3">Bill Calendar</h3>
+                    <p class="text-muted-foreground">
                         Visual calendar showing exactly which bills are due before your next paycheck. Never wonder if you have enough.
                     </p>
                 </div>
 
                 <!-- Feature 2 -->
-                <div class="style="background-color: var(--color-card);" rounded-xl p-8 border style="border-color: var(--color-border);" hover:shadow-lg transition">
-                    <div class="text-4xl mb-4">🤖</div>
-                    <h3 class="text-xl font-bold style="color: var(--color-foreground);" mb-3">AI Receipt Scanning</h3>
-                    <p class="style="color: var(--color-muted-foreground);"">
+                <div class="bg-card border border-border rounded-[var(--radius-lg)] p-8 hover-lift hover-glow transition-all duration-300 animate-scale-in" style="animation-delay: 0.1s;">
+                    <div class="text-4xl mb-4 hover-scale inline-block">🤖</div>
+                    <h3 class="text-xl font-bold text-card-foreground mb-3">AI Receipt Scanning</h3>
+                    <p class="text-muted-foreground">
                         Snap a photo of any receipt. AI extracts merchant, amount, and category with 97% accuracy. No manual entry.
                     </p>
                 </div>
 
                 <!-- Feature 3 -->
-                <div class="style="background-color: var(--color-card);" rounded-xl p-8 border style="border-color: var(--color-border);" hover:shadow-lg transition">
-                    <div class="text-4xl mb-4">🔍</div>
-                    <h3 class="text-xl font-bold style="color: var(--color-foreground);" mb-3">Subscription Detective</h3>
-                    <p class="style="color: var(--color-muted-foreground);"">
+                <div class="bg-card border border-border rounded-[var(--radius-lg)] p-8 hover-lift hover-glow transition-all duration-300 animate-scale-in" style="animation-delay: 0.2s;">
+                    <div class="text-4xl mb-4 hover-scale inline-block">🔍</div>
+                    <h3 class="text-xl font-bold text-card-foreground mb-3">Subscription Detective</h3>
+                    <p class="text-muted-foreground">
                         AI automatically finds recurring charges you forgot about. Average user finds $214/month in wasted subscriptions.
                     </p>
                 </div>
 
                 <!-- Feature 4 -->
-                <div class="style="background-color: var(--color-card);" rounded-xl p-8 border style="border-color: var(--color-border);" hover:shadow-lg transition">
-                    <div class="text-4xl mb-4">💰</div>
-                    <h3 class="text-xl font-bold style="color: var(--color-foreground);" mb-3">Smart Budgeting</h3>
-                    <p class="style="color: var(--color-muted-foreground);"">
+                <div class="bg-card border border-border rounded-[var(--radius-lg)] p-8 hover-lift hover-glow transition-all duration-300 animate-scale-in" style="animation-delay: 0.3s;">
+                    <div class="text-4xl mb-4 hover-scale inline-block">💰</div>
+                    <h3 class="text-xl font-bold text-card-foreground mb-3">Smart Budgeting</h3>
+                    <p class="text-muted-foreground">
                         Automatic rent allocation per paycheck. See your TRUE remaining budget after all obligations. No math required.
                     </p>
                 </div>
 
                 <!-- Feature 5 -->
-                <div class="style="background-color: var(--color-card);" rounded-xl p-8 border style="border-color: var(--color-border);" hover:shadow-lg transition">
-                    <div class="text-4xl mb-4">⚠️</div>
-                    <h3 class="text-xl font-bold style="color: var(--color-foreground);" mb-3">Anomaly Detection</h3>
-                    <p class="style="color: var(--color-muted-foreground);"">
+                <div class="bg-card border border-border rounded-[var(--radius-lg)] p-8 hover-lift hover-glow transition-all duration-300 animate-scale-in" style="animation-delay: 0.4s;">
+                    <div class="text-4xl mb-4 hover-scale inline-block">⚠️</div>
+                    <h3 class="text-xl font-bold text-card-foreground mb-3">Anomaly Detection</h3>
+                    <p class="text-muted-foreground">
                         Get instant alerts for unusual spending patterns. Catch fraudulent charges before they become problems.
                     </p>
                 </div>
 
                 <!-- Feature 6 -->
-                <div class="style="background-color: var(--color-card);" rounded-xl p-8 border style="border-color: var(--color-border);" hover:shadow-lg transition">
-                    <div class="text-4xl mb-4">🔐</div>
-                    <h3 class="text-xl font-bold style="color: var(--color-foreground);" mb-3">Bank-Level Security</h3>
-                    <p class="style="color: var(--color-muted-foreground);"">
+                <div class="bg-card border border-border rounded-[var(--radius-lg)] p-8 hover-lift hover-glow transition-all duration-300 animate-scale-in" style="animation-delay: 0.5s;">
+                    <div class="text-4xl mb-4 hover-scale inline-block">🔐</div>
+                    <h3 class="text-xl font-bold text-card-foreground mb-3">Bank-Level Security</h3>
+                    <p class="text-muted-foreground">
                         AES-256 encryption. Two-factor authentication. We never store your bank login. Your data is 100% private.
                     </p>
                 </div>
@@ -429,74 +439,90 @@
         </div>
     </section>
 
-    <!-- Testimonials -->
-    <section class="py-20 px-4 sm:px-6 lg:px-8 style="background-color: var(--color-muted);"">
+    <!-- Testimonials Carousel -->
+    <section class="py-20 px-4 sm:px-6 lg:px-8 bg-muted" x-data="{ 
+        currentSlide: 0,
+        testimonials: [
+            { name: 'Michael T.', role: 'Software Engineer', initial: 'M', color: 'bg-primary', quote: 'I found $280/month in subscriptions I forgot about. Unobtuse paid for itself 25x over in the first week.' },
+            { name: 'Sarah K.', role: 'Marketing Manager', initial: 'S', color: 'bg-chart-4', quote: 'The bill calendar that shows what\'s due before my next paycheck is a game changer. Finally, an app that gets how real people budget.' },
+            { name: 'David L.', role: 'Teacher', initial: 'D', color: 'bg-chart-2', quote: 'Zero late fees in 8 months! My credit score went up 48 points. This app has genuinely changed my financial life.' },
+            { name: 'Jennifer M.', role: 'Nurse', initial: 'J', color: 'bg-chart-3', quote: 'As someone who works irregular shifts, the pay schedule feature is perfect. I finally know exactly when I can afford bills without stress.' },
+            { name: 'Robert C.', role: 'Small Business Owner', initial: 'R', color: 'bg-chart-5', quote: 'The subscription detection saved me $340/month! I had no idea I was paying for services I stopped using years ago.' },
+            { name: 'Emily P.', role: 'Graphic Designer', initial: 'E', color: 'bg-chart-1', quote: 'The AI receipt scanning is incredible. No more manual entry - just snap a photo and it\'s done. Huge time saver!' },
+            { name: 'James W.', role: 'Sales Manager', initial: 'J', color: 'bg-chart-2', quote: 'My credit score improved by 65 points in 6 months. The bill reminders and budgeting tools are exactly what I needed.' },
+            { name: 'Lisa H.', role: 'Accountant', initial: 'L', color: 'bg-chart-4', quote: 'I recommend this to all my clients. The financial health calculator and insights are professional-grade tools.' },
+            { name: 'Mark D.', role: 'Freelancer', initial: 'M', color: 'bg-chart-3', quote: 'Variable income is tough, but Unobtuse makes it manageable. I can see my true budget after all obligations - game changer!' },
+            { name: 'Amanda F.', role: 'Student', initial: 'A', color: 'bg-chart-5', quote: 'As a broke college student, avoiding late fees is crucial. This app has saved me hundreds already. Best free tool ever!' }
+        ],
+        next() {
+            this.currentSlide = (this.currentSlide + 1) % this.testimonials.length;
+        },
+        prev() {
+            this.currentSlide = (this.currentSlide - 1 + this.testimonials.length) % this.testimonials.length;
+        },
+        goToSlide(index) {
+            this.currentSlide = index;
+        }
+    }" x-init="let interval = setInterval(() => currentSlide = (currentSlide + 1) % testimonials.length, 5000); $el.addEventListener('mouseenter', () => clearInterval(interval)); $el.addEventListener('mouseleave', () => interval = setInterval(() => currentSlide = (currentSlide + 1) % testimonials.length, 5000))">
         <div class="max-w-7xl mx-auto">
             <div class="text-center mb-16">
-                <h2 class="text-3xl sm:text-4xl font-bold style="color: var(--color-foreground);" mb-4">
+                <h2 class="text-3xl sm:text-4xl font-bold text-foreground mb-4 animate-fade-in">
                     Real People, Real Results
                 </h2>
-                <p class="text-xl style="color: var(--color-muted-foreground);"">
+                <p class="text-xl text-muted-foreground animate-fade-in-delay">
                     See how Unobtuse Ledger is helping thousands save money and reduce stress.
                 </p>
             </div>
 
-            <div class="grid md:grid-cols-3 gap-8">
-                <!-- Testimonial 1 -->
-                <div class="style="background-color: var(--color-background);" rounded-xl p-8 border style="border-color: var(--color-border);"">
-                    <div class="flex items-center mb-4">
-                        <div class="flex text-yellow-400">
-                            ★★★★★
-                        </div>
-                    </div>
-                    <p class="style="color: var(--color-muted-foreground);" mb-6 italic">
-                        "I found $280/month in subscriptions I forgot about. Unobtuse paid for itself 25x over in the first week."
-                    </p>
-                    <div class="flex items-center space-x-3">
-                        <div class="w-12 h-12 bg-primary rounded-full flex items-center justify-center text-white font-bold">M</div>
-                        <div>
-                            <div class="font-bold style="color: var(--color-foreground);"">Michael T.</div>
-                            <div class="text-sm text-gray-500">Software Engineer</div>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Testimonial 2 -->
-                <div class="style="background-color: var(--color-background);" rounded-xl p-8 border style="border-color: var(--color-border);"">
-                    <div class="flex items-center mb-4">
-                        <div class="flex text-yellow-400">
-                            ★★★★★
-                        </div>
-                    </div>
-                    <p class="style="color: var(--color-muted-foreground);" mb-6 italic">
-                        "The bill calendar that shows what's due before my next paycheck is a game changer. Finally, an app that gets how real people budget."
-                    </p>
-                    <div class="flex items-center space-x-3">
-                        <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold" style="background-color: var(--color-chart-4); color: white;">S</div>
-                        <div>
-                            <div class="font-bold style="color: var(--color-foreground);"">Sarah K.</div>
-                            <div class="text-sm text-gray-500">Marketing Manager</div>
-                        </div>
+            <!-- Carousel Container -->
+            <div class="relative max-w-4xl mx-auto">
+                <!-- Testimonials Slides -->
+                <div class="overflow-hidden rounded-[var(--radius-lg)]">
+                    <div class="flex transition-transform duration-500 ease-in-out" 
+                         :style="`transform: translateX(-${currentSlide * 100}%)`">
+                        <template x-for="(testimonial, index) in testimonials" :key="index">
+                            <div class="min-w-full px-4">
+                                <div class="bg-card border border-border rounded-[var(--radius-lg)] p-8 shadow-elevated hover:shadow-lg transition-all duration-300 hover:-translate-y-1">
+                                    <div class="flex items-center mb-4">
+                                        <div class="flex text-yellow-400 text-lg">
+                                            ★★★★★
+                                        </div>
+                                    </div>
+                                    <p class="text-muted-foreground mb-6 italic text-lg leading-relaxed" x-text="testimonial.quote"></p>
+                                    <div class="flex items-center gap-3">
+                                        <div :class="[testimonial.color, 'w-12 h-12 rounded-full flex items-center justify-center text-white font-bold text-lg']" x-text="testimonial.initial"></div>
+                                        <div>
+                                            <div class="font-bold text-card-foreground" x-text="testimonial.name"></div>
+                                            <div class="text-sm text-muted-foreground" x-text="testimonial.role"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </template>
                     </div>
                 </div>
 
-                <!-- Testimonial 3 -->
-                <div class="style="background-color: var(--color-background);" rounded-xl p-8 border style="border-color: var(--color-border);"">
-                    <div class="flex items-center mb-4">
-                        <div class="flex text-yellow-400">
-                            ★★★★★
-                        </div>
-                    </div>
-                    <p class="style="color: var(--color-muted-foreground);" mb-6 italic">
-                        "Zero late fees in 8 months! My credit score went up 48 points. This app has genuinely changed my financial life."
-                    </p>
-                    <div class="flex items-center space-x-3">
-                        <div class="w-12 h-12 rounded-full flex items-center justify-center font-bold" style="background-color: var(--color-chart-2); color: white;">D</div>
-                        <div>
-                            <div class="font-bold style="color: var(--color-foreground);"">David L.</div>
-                            <div class="text-sm text-gray-500">Teacher</div>
-                        </div>
-                    </div>
+                <!-- Navigation Arrows -->
+                <button @click="prev()" 
+                        class="absolute left-0 top-1/2 -translate-y-1/2 -translate-x-4 bg-card border border-border rounded-full p-3 shadow-lg hover:bg-muted transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring z-10">
+                    <svg class="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+                    </svg>
+                </button>
+                <button @click="next()" 
+                        class="absolute right-0 top-1/2 -translate-y-1/2 translate-x-4 bg-card border border-border rounded-full p-3 shadow-lg hover:bg-muted transition-all duration-200 hover:scale-110 focus:outline-none focus:ring-2 focus:ring-ring z-10">
+                    <svg class="w-6 h-6 text-foreground" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path>
+                    </svg>
+                </button>
+
+                <!-- Dots Indicator -->
+                <div class="flex justify-center gap-2 mt-8">
+                    <template x-for="(testimonial, index) in testimonials" :key="index">
+                        <button @click="goToSlide(index)"
+                                :class="currentSlide === index ? 'bg-primary w-8' : 'bg-muted-foreground/30 w-2'"
+                                class="h-2 rounded-full transition-all duration-300 hover:bg-primary/50 focus:outline-none focus:ring-2 focus:ring-ring"></button>
+                    </template>
                 </div>
             </div>
         </div>
@@ -516,48 +542,48 @@
 
             <div class="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
                 <!-- Free Tier -->
-                <div class="style="background-color: var(--color-card);" rounded-2xl p-8 border-2 style="border-color: var(--color-border);"">
+                <div class="bg-card border border-border rounded-[var(--radius-lg)] p-8 shadow-elevated hover-lift transition-all duration-300">
                     <div class="text-center mb-6">
-                        <h3 class="text-2xl font-bold style="color: var(--color-foreground);" mb-2">Free</h3>
-                        <div class="text-4xl font-bold style="color: var(--color-foreground);" mb-2">$0</div>
-                        <div class="style="color: var(--color-muted-foreground);"">Forever free</div>
+                        <h3 class="text-2xl font-bold text-card-foreground mb-2">Free</h3>
+                        <div class="text-4xl font-bold text-card-foreground mb-2">$0</div>
+                        <div class="text-muted-foreground">Forever free</div>
                     </div>
                     
                     <ul class="space-y-4 mb-8">
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 text-chart-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             </svg>
-                            <span class="style="color: var(--color-muted-foreground);"">1-2 linked accounts</span>
+                            <span class="text-muted-foreground">1-2 linked accounts</span>
                         </li>
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 text-chart-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             </svg>
-                            <span class="style="color: var(--color-muted-foreground);"">Basic bill reminders</span>
+                            <span class="text-muted-foreground">Basic bill reminders</span>
                         </li>
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 text-chart-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                            <span class="style="color: var(--color-muted-foreground);"">Simple budgeting (3 categories)</span>
+                            </svg>
+                            <span class="text-muted-foreground">Simple budgeting (3 categories)</span>
                         </li>
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 text-chart-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                                    </svg>
-                            <span class="style="color: var(--color-muted-foreground);"">Transaction tracking</span>
+                            </svg>
+                            <span class="text-muted-foreground">Transaction tracking</span>
                         </li>
                     </ul>
 
-                    <a href="{{ route('register') }}" class="block w-full bg-gray-900 dark:bg-white hover:style="background-color: var(--color-card);" dark:hover:bg-gray-100 text-white dark:text-gray-900 text-center px-6 py-3 rounded-lg font-semibold transition">
+                    <a href="{{ route('register') }}" class="block w-full bg-primary hover:bg-primary/90 text-primary-foreground text-center px-6 py-3 rounded-[var(--radius-md)] font-semibold transition-all duration-200 hover:scale-105">
                         Get Started Free
                     </a>
                 </div>
 
                 <!-- Premium Tier (POPULAR) -->
-                <div class="bg-gradient-to-br from-blue-600 to-purple-600 rounded-2xl p-8 border-2 border-blue-600 relative transform scale-105 shadow-2xl">
-                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+                <div class="bg-gradient-to-br from-chart-1 to-chart-5 dark:from-chart-3 dark:to-chart-5 rounded-[var(--radius-lg)] p-8 border-2 border-chart-1 dark:border-chart-3 relative transform scale-105 shadow-2xl hover:scale-110 transition-all duration-300 animate-float">
+                    <div class="absolute -top-4 left-1/2 transform -translate-x-1/2 animate-bounce">
                         <span class="bg-yellow-400 text-gray-900 px-4 py-1 rounded-full text-sm font-bold">MOST POPULAR</span>
                     </div>
 
@@ -569,37 +595,37 @@
                     </div>
                     
                     <ul class="space-y-4 mb-8 text-white">
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             </svg>
-                            <span className="font-medium">Everything in Free, plus:</span>
+                            <span class="font-medium">Everything in Free, plus:</span>
                         </li>
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             </svg>
                             <span><strong>Unlimited</strong> account linking</span>
                         </li>
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             </svg>
                             <span><strong>AI receipt scanning</strong> (50/month)</span>
                         </li>
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             </svg>
                             <span><strong>Subscription detection</strong></span>
                         </li>
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             </svg>
                             <span>Advanced budgeting & insights</span>
                         </li>
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             </svg>
@@ -607,61 +633,61 @@
                         </li>
                     </ul>
 
-                    <a href="{{ route('register') }}" class="block w-full bg-white hover:bg-gray-100 text-chart-3 text-center px-6 py-3 rounded-lg font-semibold transition">
+                    <a href="{{ route('register') }}" class="block w-full bg-white hover:bg-gray-100 text-chart-3 text-center px-6 py-3 rounded-[var(--radius-md)] font-semibold transition-all duration-200 hover:scale-105 hover:shadow-lg">
                         Start 14-Day Free Trial
                     </a>
                     <div class="text-center mt-3 text-sm text-white opacity-75">No credit card required</div>
                 </div>
 
                 <!-- Pro Tier -->
-                <div class="style="background-color: var(--color-card);" rounded-2xl p-8 border-2 style="border-color: var(--color-border);"">
+                <div class="bg-card border border-border rounded-[var(--radius-lg)] p-8 shadow-elevated hover-lift transition-all duration-300">
                     <div class="text-center mb-6">
-                        <h3 class="text-2xl font-bold style="color: var(--color-foreground);" mb-2">Pro</h3>
-                        <div class="text-4xl font-bold style="color: var(--color-foreground);" mb-2">$19.99</div>
-                        <div class="style="color: var(--color-muted-foreground);"">per month</div>
-                        <div class="text-sm mt-2 text-gray-500">or $199/year (save $40)</div>
+                        <h3 class="text-2xl font-bold text-card-foreground mb-2">Pro</h3>
+                        <div class="text-4xl font-bold text-card-foreground mb-2">$19.99</div>
+                        <div class="text-muted-foreground">per month</div>
+                        <div class="text-sm mt-2 text-muted-foreground">or $199/year (save $40)</div>
                     </div>
                     
                     <ul class="space-y-4 mb-8">
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 text-chart-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             </svg>
-                            <span class="style="color: var(--color-foreground);" font-medium">Everything in Premium, plus:</span>
+                            <span class="text-card-foreground font-medium">Everything in Premium, plus:</span>
                         </li>
-                        <li class="flex items-start space-x-3">
-                            <svg class="w-6 h-6 text-chart-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                            </svg>
-                            <span class="style="color: var(--color-muted-foreground);""><strong>Unlimited</strong> receipt scanning</span>
-                        </li>
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 text-chart-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
                             </svg>
-                            <span class="style="color: var(--color-muted-foreground);""><strong>Bill negotiation</strong> service</span>
+                            <span class="text-muted-foreground"><strong>Unlimited</strong> receipt scanning</span>
                         </li>
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 text-chart-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                            <span class="style="color: var(--color-muted-foreground);"">Family accounts (5 users)</span>
+                            </svg>
+                            <span class="text-muted-foreground"><strong>Bill negotiation</strong> service</span>
                         </li>
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 text-chart-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                            <span class="style="color: var(--color-muted-foreground);"">Advanced reports & export</span>
+                            </svg>
+                            <span class="text-muted-foreground">Family accounts (5 users)</span>
                         </li>
-                        <li class="flex items-start space-x-3">
+                        <li class="flex items-start gap-3">
                             <svg class="w-6 h-6 text-chart-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
                                 <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
-                    </svg>
-                            <span class="style="color: var(--color-muted-foreground);"">API access</span>
+                            </svg>
+                            <span class="text-muted-foreground">Advanced reports & export</span>
+                        </li>
+                        <li class="flex items-start gap-3">
+                            <svg class="w-6 h-6 text-chart-2 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                                <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"></path>
+                            </svg>
+                            <span class="text-muted-foreground">API access</span>
                         </li>
                     </ul>
 
-                    <a href="{{ route('register') }}" class="block w-full bg-gray-900 dark:bg-white hover:style="background-color: var(--color-card);" dark:hover:bg-gray-100 text-white dark:text-gray-900 text-center px-6 py-3 rounded-lg font-semibold transition">
+                    <a href="{{ route('register') }}" class="block w-full bg-primary hover:bg-primary/90 text-primary-foreground text-center px-6 py-3 rounded-[var(--radius-md)] font-semibold transition-all duration-200 hover:scale-105">
                         Start 14-Day Free Trial
                     </a>
                 </div>

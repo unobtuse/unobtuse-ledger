@@ -475,4 +475,97 @@ class PaySchedule extends Model
     {
         return $query->where('is_active', true);
     }
+
+    /**
+     * Get combined net pay from multiple schedules.
+     *
+     * @param \Illuminate\Database\Eloquent\Collection $schedules
+     * @return float
+     */
+    public static function getCombinedNetPay($schedules): float
+    {
+        return (float) $schedules->sum(function ($schedule) {
+            return (float) ($schedule->net_pay ?? 0);
+        });
+    }
+
+    /**
+     * Get earliest pay date from multiple schedules.
+     *
+     * @param \Illuminate\Database\Eloquent\Collection $schedules
+     * @return Carbon|null
+     */
+    public static function getEarliestPayDate($schedules): ?Carbon
+    {
+        $dates = $schedules->map(function ($schedule) {
+            return $schedule->next_pay_date;
+        })->filter()->sort();
+
+        return $dates->first();
+    }
+
+    /**
+     * Get combined upcoming pay dates from multiple schedules.
+     *
+     * @param \Illuminate\Database\Eloquent\Collection $schedules
+     * @param int $count Number of pay dates to return
+     * @return array Array of Carbon dates, sorted chronologically
+     */
+    public static function getCombinedUpcomingPayDates($schedules, int $count = 6): array
+    {
+        $allDates = collect();
+
+        foreach ($schedules as $schedule) {
+            $dates = $schedule->calculateUpcomingPayDates($count * 2); // Get more dates to ensure we have enough
+            foreach ($dates as $date) {
+                if ($date->isFuture() || $date->isToday()) {
+                    $allDates->push($date);
+                }
+            }
+        }
+
+        // Sort by date and get unique dates, then take first $count
+        return $allDates->unique(function ($date) {
+            return $date->toDateString();
+        })->sort()->take($count)->values()->toArray();
+    }
+
+    /**
+     * Get combined income projection from multiple schedules.
+     *
+     * @param \Illuminate\Database\Eloquent\Collection $schedules
+     * @param int $months Number of months to project
+     * @return array Array of monthly projections
+     */
+    public static function getCombinedIncomeProjection($schedules, int $months = 6): array
+    {
+        $projection = [];
+        $monthsData = [];
+
+        foreach ($schedules as $schedule) {
+            if (!$schedule->net_pay) {
+                continue;
+            }
+
+            // Get pay dates for each schedule (enough to cover the months)
+            $payDates = $schedule->calculateUpcomingPayDates($months * 3); // Rough estimate
+
+            foreach ($payDates as $date) {
+                $monthKey = $date->format('Y-m');
+                if (!isset($monthsData[$monthKey])) {
+                    $monthsData[$monthKey] = [
+                        'month' => $date->format('F Y'),
+                        'pay_count' => 0,
+                        'total' => 0,
+                    ];
+                }
+                $monthsData[$monthKey]['pay_count']++;
+                $monthsData[$monthKey]['total'] += (float) $schedule->net_pay;
+            }
+        }
+
+        // Sort by month key and return first $months
+        ksort($monthsData);
+        return array_slice(array_values($monthsData), 0, $months);
+    }
 }

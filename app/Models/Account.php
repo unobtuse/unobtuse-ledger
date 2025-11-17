@@ -250,7 +250,7 @@ class Account extends Model
             return null;
         }
 
-        return now()->diffInDays($this->payment_due_date, false);
+        return (int) now()->diffInDays($this->payment_due_date, false);
     }
 
     /**

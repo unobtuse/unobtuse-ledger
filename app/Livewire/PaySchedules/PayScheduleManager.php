@@ -17,6 +17,9 @@ use Livewire\Component;
  */
 class PayScheduleManager extends Component
 {
+    // View mode: 'combined' or 'individual'
+    public string $viewMode = 'combined';
+    
     // Form fields - matching model structure
     public string $frequency = 'biweekly';
     public ?float $gross_pay = null;
@@ -28,6 +31,7 @@ class PayScheduleManager extends Component
     public ?int $pay_day_of_month_2 = null; // For semimonthly: 1-31
     public ?string $next_pay_date = null;
     public ?string $notes = null;
+    public bool $is_active = true; // Whether to set schedule as active
     
     // Modal states
     public bool $showCreateModal = false;
@@ -40,6 +44,20 @@ class PayScheduleManager extends Component
     public function mount(): void
     {
         $this->next_pay_date = now()->addWeeks(2)->toDateString();
+        
+        // Load view mode preference or default to combined
+        $this->viewMode = auth()->user()->getPreference('pay_schedule_view_mode', 'combined');
+    }
+    
+    /**
+     * Toggle view mode
+     */
+    public function toggleViewMode(string $mode): void
+    {
+        if (in_array($mode, ['combined', 'individual'])) {
+            $this->viewMode = $mode;
+            auth()->user()->setPreference('pay_schedule_view_mode', $mode);
+        }
     }
     
     /**
@@ -71,6 +89,7 @@ class PayScheduleManager extends Component
         $this->pay_day_of_month_2 = $schedule->pay_day_of_month_2;
         $this->next_pay_date = $schedule->next_pay_date?->toDateString() ?? now()->addWeeks(2)->toDateString();
         $this->notes = $schedule->notes;
+        $this->is_active = $schedule->is_active;
         
         $this->showEditModal = true;
     }
@@ -127,18 +146,15 @@ class PayScheduleManager extends Component
         
         if ($this->showEditModal && $this->selectedScheduleId) {
             // Update existing schedule
+            $data['is_active'] = $this->is_active;
             PaySchedule::where('id', $this->selectedScheduleId)
                 ->where('user_id', auth()->id())
                 ->update($data);
             
             session()->flash('success', 'Pay schedule updated successfully!');
         } else {
-            // Deactivate all other schedules for this user
-            PaySchedule::where('user_id', auth()->id())
-                ->update(['is_active' => false]);
-            
-            // Create new schedule
-            $data['is_active'] = true;
+            // Create new schedule - set is_active based on form or default to true for first schedule
+            $data['is_active'] = $this->is_active ?? (PaySchedule::where('user_id', auth()->id())->count() === 0);
             PaySchedule::create($data);
             session()->flash('success', 'Pay schedule created successfully!');
         }
@@ -148,20 +164,18 @@ class PayScheduleManager extends Component
     }
     
     /**
-     * Activate a pay schedule
+     * Toggle active status of a pay schedule
      */
-    public function activate(string $scheduleId): void
+    public function toggleActive(string $scheduleId): void
     {
-        // Deactivate all schedules
-        PaySchedule::where('user_id', auth()->id())
-            ->update(['is_active' => false]);
-        
-        // Activate selected schedule
-        PaySchedule::where('id', $scheduleId)
+        $schedule = PaySchedule::where('id', $scheduleId)
             ->where('user_id', auth()->id())
-            ->update(['is_active' => true]);
+            ->firstOrFail();
         
-        session()->flash('success', 'Pay schedule activated!');
+        $schedule->update(['is_active' => !$schedule->is_active]);
+        
+        $status = $schedule->is_active ? 'activated' : 'deactivated';
+        session()->flash('success', "Pay schedule {$status}!");
     }
     
     /**
@@ -202,6 +216,7 @@ class PayScheduleManager extends Component
         $this->pay_day_of_month_2 = null;
         $this->next_pay_date = now()->addWeeks(2)->toDateString();
         $this->notes = null;
+        $this->is_active = true;
         $this->selectedScheduleId = null;
     }
     
@@ -217,22 +232,130 @@ class PayScheduleManager extends Component
     }
     
     /**
-     * Get active pay schedule
+     * Get active pay schedules (multiple)
      */
-    protected function getActiveSchedule(): ?PaySchedule
+    protected function getActiveSchedules()
     {
         return PaySchedule::where('user_id', auth()->id())
             ->where('is_active', true)
-            ->first();
+            ->orderBy('next_pay_date', 'asc')
+            ->get();
     }
     
     /**
-     * Get upcoming pay dates using model method
+     * Get active pay schedule (single, for backward compatibility)
+     */
+    protected function getActiveSchedule(): ?PaySchedule
+    {
+        return $this->getActiveSchedules()->first();
+    }
+    
+    /**
+     * Get combined metrics from all active schedules
+     */
+    protected function getCombinedMetrics(): array
+    {
+        $schedules = $this->getActiveSchedules();
+        
+        if ($schedules->isEmpty()) {
+            return [
+                'total_net_pay' => 0,
+                'earliest_pay_date' => null,
+                'days_until' => null,
+                'bills_due' => collect([]),
+                'total_bills_due' => 0,
+                'upcoming_pay_dates' => [],
+                'income_projection' => [],
+                'currency' => 'USD',
+                'active_count' => 0,
+            ];
+        }
+        
+        $earliestPayDate = PaySchedule::getEarliestPayDate($schedules);
+        $combinedNetPay = PaySchedule::getCombinedNetPay($schedules);
+        $upcomingDates = PaySchedule::getCombinedUpcomingPayDates($schedules, 6);
+        $incomeProjection = PaySchedule::getCombinedIncomeProjection($schedules, 6);
+        
+        // Get bills due before earliest payday
+        $billsDue = collect([]);
+        if ($earliestPayDate) {
+            $billsDue = \App\Models\Bill::where('user_id', auth()->id())
+                ->dueBeforePayday($earliestPayDate)
+                ->orderBy('next_due_date', 'asc')
+                ->get();
+        }
+        
+        // Get primary currency (from first schedule)
+        $currency = $schedules->first()->currency ?? 'USD';
+        
+        return [
+            'total_net_pay' => $combinedNetPay,
+            'earliest_pay_date' => $earliestPayDate,
+            'days_until' => $earliestPayDate ? now()->diffInDays($earliestPayDate, false) : null,
+            'bills_due' => $billsDue,
+            'total_bills_due' => $billsDue->sum('amount'),
+            'upcoming_pay_dates' => array_map(fn($date) => $date->toDateString(), $upcomingDates),
+            'income_projection' => $incomeProjection,
+            'currency' => $currency,
+            'active_count' => $schedules->count(),
+        ];
+    }
+    
+    /**
+     * Get individual metrics for each active schedule
+     */
+    protected function getIndividualMetrics(): array
+    {
+        $schedules = $this->getActiveSchedules();
+        $metrics = [];
+        
+        foreach ($schedules as $schedule) {
+            $upcomingDates = $schedule->calculateUpcomingPayDates(6);
+            $billsDue = $schedule->getBillsDueBeforePayday();
+            
+            // Calculate income projection for this schedule
+            $incomeProjection = [];
+            if ($schedule->net_pay) {
+                $dates = $schedule->calculateUpcomingPayDates(12);
+                $months = [];
+                foreach ($dates as $date) {
+                    $monthKey = $date->format('Y-m');
+                    if (!isset($months[$monthKey])) {
+                        $months[$monthKey] = [
+                            'month' => $date->format('F Y'),
+                            'pay_count' => 0,
+                            'total' => 0,
+                        ];
+                    }
+                    $months[$monthKey]['pay_count']++;
+                    $months[$monthKey]['total'] += (float) $schedule->net_pay;
+                }
+                $incomeProjection = array_slice(array_values($months), 0, 6);
+            }
+            
+            $metrics[] = [
+                'schedule' => $schedule,
+                'upcoming_pay_dates' => array_map(fn($date) => $date->toDateString(), $upcomingDates),
+                'bills_due' => $billsDue,
+                'total_bills_due' => $billsDue->sum('amount'),
+                'income_projection' => $incomeProjection,
+            ];
+        }
+        
+        return $metrics;
+    }
+    
+    /**
+     * Get upcoming pay dates using model method (for backward compatibility)
      */
     protected function getUpcomingPayDates(): array
     {
-        $schedule = $this->getActiveSchedule();
+        if ($this->viewMode === 'combined') {
+            $combined = $this->getCombinedMetrics();
+            return $combined['upcoming_pay_dates'];
+        }
         
+        $schedule = $this->getActiveSchedule();
         if (!$schedule) {
             return [];
         }
@@ -242,12 +365,16 @@ class PayScheduleManager extends Component
     }
     
     /**
-     * Get bills due before next payday
+     * Get bills due before next payday (for backward compatibility)
      */
     protected function getBillsDueBeforePayday()
     {
-        $schedule = $this->getActiveSchedule();
+        if ($this->viewMode === 'combined') {
+            $combined = $this->getCombinedMetrics();
+            return $combined['bills_due'];
+        }
         
+        $schedule = $this->getActiveSchedule();
         if (!$schedule || !$schedule->next_pay_date) {
             return collect([]);
         }
@@ -256,19 +383,22 @@ class PayScheduleManager extends Component
     }
     
     /**
-     * Get income projection for next 6 months
+     * Get income projection for next 6 months (for backward compatibility)
      */
     protected function getIncomeProjection(): array
     {
-        $schedule = $this->getActiveSchedule();
+        if ($this->viewMode === 'combined') {
+            $combined = $this->getCombinedMetrics();
+            return $combined['income_projection'];
+        }
         
+        $schedule = $this->getActiveSchedule();
         if (!$schedule || !$schedule->net_pay) {
             return [];
         }
         
         $projection = [];
-        $dates = $schedule->calculateUpcomingPayDates(12); // Get 12 pay dates (roughly 6 months)
-        $currentMonth = now()->format('Y-m');
+        $dates = $schedule->calculateUpcomingPayDates(12);
         $months = [];
         
         foreach ($dates as $date) {
@@ -284,7 +414,6 @@ class PayScheduleManager extends Component
             $months[$monthKey]['total'] += (float) $schedule->net_pay;
         }
         
-        // Return first 6 months
         return array_slice($months, 0, 6);
     }
     
@@ -293,17 +422,17 @@ class PayScheduleManager extends Component
      */
     public function render(): View
     {
-        $activeSchedule = $this->getActiveSchedule();
-        $billsDue = $this->getBillsDueBeforePayday();
-        $incomeProjection = $this->getIncomeProjection();
+        $activeSchedules = $this->getActiveSchedules();
+        $combinedMetrics = $this->getCombinedMetrics();
+        $individualMetrics = $this->getIndividualMetrics();
         
         return view('livewire.pay-schedules.pay-schedule-manager', [
             'paySchedules' => $this->getPaySchedules(),
-            'activeSchedule' => $activeSchedule,
-            'upcomingPayDates' => $this->getUpcomingPayDates(),
-            'billsDue' => $billsDue,
-            'totalBillsDue' => $billsDue->sum('amount'),
-            'incomeProjection' => $incomeProjection,
+            'activeSchedules' => $activeSchedules,
+            'activeSchedule' => $activeSchedules->first(), // For backward compatibility
+            'combinedMetrics' => $combinedMetrics,
+            'individualMetrics' => $individualMetrics,
+            'viewMode' => $this->viewMode,
         ]);
     }
 }

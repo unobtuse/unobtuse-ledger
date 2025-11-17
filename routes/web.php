@@ -68,4 +68,10 @@ Route::middleware(['auth', 'verified'])->group(function () {
     Route::prefix('budget')->name('budget.')->group(function () {
         Route::get('/', [BudgetController::class, 'index'])->name('index');
     });
+
+    // Synthetic Data Generation (Admin Only)
+    Route::middleware('admin')->group(function () {
+        Route::get('/dashboard/generate', \App\Livewire\Dashboard\GenerateSyntheticData::class)->name('dashboard.generate');
+        Route::get('/dashboard/backup-database', [\App\Http\Controllers\DatabaseBackupController::class, 'download'])->name('dashboard.backup-database');
+    });
 });

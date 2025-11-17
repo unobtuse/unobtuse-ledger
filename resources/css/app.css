@@ -167,3 +167,124 @@
     .text-chart-4 { color: var(--color-chart-4); }
     .text-chart-5 { color: var(--color-chart-5); }
 }
+
+/* Modern Animations */
+@layer utilities {
+    @keyframes fade-in {
+        from {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes fade-in-delay {
+        0% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        50% {
+            opacity: 0;
+            transform: translateY(20px);
+        }
+        100% {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+    
+    @keyframes slide-in-left {
+        from {
+            opacity: 0;
+            transform: translateX(-30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes slide-in-right {
+        from {
+            opacity: 0;
+            transform: translateX(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateX(0);
+        }
+    }
+    
+    @keyframes scale-in {
+        from {
+            opacity: 0;
+            transform: scale(0.95);
+        }
+        to {
+            opacity: 1;
+            transform: scale(1);
+        }
+    }
+    
+    @keyframes float {
+        0%, 100% {
+            transform: translateY(0px);
+        }
+        50% {
+            transform: translateY(-10px);
+        }
+    }
+    
+    .animate-fade-in {
+        animation: fade-in 0.6s ease-out forwards;
+    }
+    
+    .animate-fade-in-delay {
+        animation: fade-in-delay 1s ease-out forwards;
+    }
+    
+    .animate-slide-in-left {
+        animation: slide-in-left 0.6s ease-out forwards;
+    }
+    
+    .animate-slide-in-right {
+        animation: slide-in-right 0.6s ease-out forwards;
+    }
+    
+    .animate-scale-in {
+        animation: scale-in 0.5s ease-out forwards;
+    }
+    
+    .animate-float {
+        animation: float 3s ease-in-out infinite;
+    }
+    
+    /* Hover Effects */
+    .hover-lift {
+        transition: all 0.3s ease-in-out;
+    }
+    
+    .hover-lift:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    }
+    
+    .hover-glow {
+        transition: all 0.3s ease-in-out;
+    }
+    
+    .hover-glow:hover {
+        box-shadow: 0 0 20px rgba(0, 0, 0, 0.1);
+    }
+    
+    .hover-scale {
+        transition: transform 0.3s ease-in-out;
+    }
+    
+    .hover-scale:hover {
+        transform: scale(1.05);
+    }
+}

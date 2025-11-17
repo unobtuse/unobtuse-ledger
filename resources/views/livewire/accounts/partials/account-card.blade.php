@@ -211,7 +211,7 @@
                                     </p>
                                 </div>
                                 <p class="text-sm font-semibold text-card-foreground ml-4">
-                                    {{ $transaction->getFormattedAmount() }}
+                                    {{ $transaction->formatted_amount }}
                                 </p>
                             </div>
                         @endforeach

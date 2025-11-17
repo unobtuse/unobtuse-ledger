@@ -469,20 +469,25 @@ class BillsList extends Component
      */
     protected function getBillsDueBeforeNextPayday()
     {
-        $paySchedule = auth()->user()->activePaySchedule;
+        $activeSchedules = auth()->user()->activePaySchedules()->get();
         
-        if (!$paySchedule) {
+        if ($activeSchedules->isEmpty()) {
             return collect();
         }
         
-        $nextPayDate = $paySchedule->next_pay_date ?? $paySchedule->calculateNextPayDate();
+        // Use earliest payday from all active schedules
+        $earliestPayDate = \App\Models\PaySchedule::getEarliestPayDate($activeSchedules);
+        
+        if (!$earliestPayDate) {
+            return collect();
+        }
         
         return Bill::where('user_id', auth()->id())
             ->where(function ($query) {
                 $query->whereIn('payment_status', ['upcoming', 'due', 'overdue'])
                       ->orWhereNull('payment_status');
             })
-            ->where('next_due_date', '<=', $nextPayDate)
+            ->where('next_due_date', '<=', $earliestPayDate)
             ->where('next_due_date', '>=', now()->toDateString())
             ->orderBy('next_due_date')
             ->get();
@@ -493,18 +498,21 @@ class BillsList extends Component
      */
     protected function getPayScheduleInfo(): array
     {
-        $paySchedule = auth()->user()->activePaySchedule;
+        $activeSchedules = auth()->user()->activePaySchedules()->get();
         
-        if (!$paySchedule) {
+        if ($activeSchedules->isEmpty()) {
             return [
                 'exists' => false,
                 'next_pay_date' => null,
                 'days_until' => null,
                 'net_pay' => null,
+                'active_count' => 0,
             ];
         }
         
-        $nextPayDate = $paySchedule->next_pay_date ?? $paySchedule->calculateNextPayDate();
+        // Use earliest payday from all active schedules
+        $earliestPayDate = \App\Models\PaySchedule::getEarliestPayDate($activeSchedules);
+        $combinedNetPay = \App\Models\PaySchedule::getCombinedNetPay($activeSchedules);
         $billsDueBeforePayday = $this->getBillsDueBeforeNextPayday();
         $totalDueBeforePayday = $billsDueBeforePayday->sum(function ($bill) {
             return abs((float) $bill->amount);
@@ -512,11 +520,12 @@ class BillsList extends Component
         
         return [
             'exists' => true,
-            'next_pay_date' => $nextPayDate,
-            'days_until' => now()->diffInDays($nextPayDate, false),
-            'net_pay' => $paySchedule->net_pay,
+            'next_pay_date' => $earliestPayDate,
+            'days_until' => $earliestPayDate ? now()->diffInDays($earliestPayDate, false) : null,
+            'net_pay' => $combinedNetPay,
             'total_due_before_payday' => $totalDueBeforePayday,
             'bills_count' => $billsDueBeforePayday->count(),
+            'active_count' => $activeSchedules->count(),
         ];
     }
     
