@@ -175,6 +175,13 @@ class ManualAccountUpload extends Component
             $this->parsedAccount = $data['account'];
             $this->parsedTransactions = $data['transactions'];
             
+            // Log what AI extracted
+            Log::info('AI extracted data', [
+                'account' => $this->parsedAccount,
+                'transaction_count' => count($this->parsedTransactions ?? []),
+                'sample_transactions' => array_slice($this->parsedTransactions ?? [], 0, 5) // First 5 for comparison
+            ]);
+            
             // Check for duplicates against existing account (match on date + amount only)
             $this->duplicateTransactionIndices = [];
             
@@ -209,6 +216,19 @@ class ManualAccountUpload extends Component
                         if ($existingTransaction) {
                             $this->duplicateTransactionIndices[] = $index;
                             $duplicateCount++;
+                            
+                            // Log first few duplicates for debugging
+                            if ($duplicateCount <= 3) {
+                                Log::info('Duplicate found', [
+                                    'index' => $index,
+                                    'parsed_date' => $txn['date'],
+                                    'parsed_amount' => $txn['amount'],
+                                    'parsed_desc' => substr($txn['description'] ?? '', 0, 50),
+                                    'existing_date' => $existingTransaction->transaction_date,
+                                    'existing_amount' => $existingTransaction->amount,
+                                    'existing_desc' => substr($existingTransaction->name, 0, 50)
+                                ]);
+                            }
                         }
                     }
                     
