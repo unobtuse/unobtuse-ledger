@@ -213,9 +213,9 @@
                                         @endif
                                     </div>
                                 </td>
-                                <td class="px-6 py-4 whitespace-nowrap text-sm text-muted-foreground">
+                                <td class="px-6 py-4 text-sm text-muted-foreground">
                                     @if($fee->account)
-                                        {{ $fee->account->display_name_without_mask }}@if($fee->account->mask) - {{ $fee->account->mask }}@endif
+                                        {{ $fee->account->institution_name }} - {{ $fee->account->display_name_without_mask }}@if($fee->account->mask) - {{ $fee->account->mask }}@endif
                                     @else
                                         Unknown
                                     @endif
