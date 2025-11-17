@@ -24,8 +24,8 @@
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
 
-    <!-- Teller Connect SDK -->
-    <script src="https://cdn.teller.io/connect/connect.js"></script>
+    <!-- Teller Connect SDK (Local Copy) -->
+    <script src="{{ asset('js/teller-connect.js') }}"></script>
 </head>
 <body class="antialiased bg-background text-foreground font-sans">
     <div class="min-h-screen" x-data="{ sidebarOpen: false }">
