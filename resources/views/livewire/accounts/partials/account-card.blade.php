@@ -143,10 +143,11 @@
             $progressColor = '';
             
             // Credit Card: Usage vs Limit
-            if ($account->account_type === 'credit_card' && $account->credit_limit > 0) {
+            if ($account->account_type === 'credit_card' && (float)$account->credit_limit > 0) {
                 $showProgressBar = true;
-                $usage = abs($account->balance);
-                $progressPercent = min(100, ($usage / $account->credit_limit) * 100);
+                $usage = abs((float)$account->balance);
+                $limit = (float)$account->credit_limit;
+                $progressPercent = min(100, ($usage / $limit) * 100);
                 $progressLabel = number_format($progressPercent, 0) . '% Used';
                 
                 // Color based on utilization
@@ -160,11 +161,12 @@
             }
             
             // Loans: Paid Off Progress
-            if (in_array($account->account_type, ['loan', 'auto_loan', 'mortgage', 'student_loan']) && $account->initial_loan_amount > 0) {
+            if (in_array($account->account_type, ['loan', 'auto_loan', 'mortgage', 'student_loan']) && (float)$account->initial_loan_amount > 0) {
                 $showProgressBar = true;
-                $currentBalance = abs($account->balance);
-                $paidOff = $account->initial_loan_amount - $currentBalance;
-                $progressPercent = min(100, ($paidOff / $account->initial_loan_amount) * 100);
+                $currentBalance = abs((float)$account->balance);
+                $initialAmount = (float)$account->initial_loan_amount;
+                $paidOff = $initialAmount - $currentBalance;
+                $progressPercent = min(100, max(0, ($paidOff / $initialAmount) * 100));
                 $progressLabel = number_format($progressPercent, 0) . '% Paid Off';
                 $progressColor = 'bg-blue-500'; // Always blue for loans
             }
