@@ -204,6 +204,11 @@
                             <h4 class="text-lg font-semibold text-card-foreground mb-4">
                                 Transactions ({{ count($parsedTransactions) }})
                                 <span class="text-sm font-normal text-muted-foreground ml-2">Click × to remove errors</span>
+                                @if($duplicateTransactionIndices && count($duplicateTransactionIndices) > 0)
+                                    <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium bg-yellow-500/20 text-yellow-700 dark:text-yellow-300 ml-2">
+                                        ⚠️ {{ count($duplicateTransactionIndices) }} duplicate(s) will be skipped
+                                    </span>
+                                @endif
                             </h4>
                             <div class="bg-muted/30 rounded-[var(--radius-md)] overflow-hidden">
                                 <div class="max-h-96 overflow-y-auto">
@@ -219,9 +224,22 @@
                                         </thead>
                                         <tbody class="divide-y divide-border">
                                             @foreach($parsedTransactions as $index => $txn)
-                                                <tr class="hover:bg-muted/50 group">
-                                                    <td class="p-3 text-card-foreground">{{ \Carbon\Carbon::parse($txn['date'])->format('M d, Y') }}</td>
-                                                    <td class="p-3 text-card-foreground">{{ $txn['description'] }}</td>
+                                                @php
+                                                    $isDuplicate = $duplicateTransactionIndices && in_array($index, $duplicateTransactionIndices);
+                                                @endphp
+                                                <tr class="hover:bg-muted/50 group {{ $isDuplicate ? 'opacity-50 bg-yellow-500/5' : '' }}">
+                                                    <td class="p-3 text-card-foreground relative">
+                                                        {{ \Carbon\Carbon::parse($txn['date'])->format('M d, Y') }}
+                                                        @if($isDuplicate)
+                                                            <span class="absolute -left-2 top-1/2 -translate-y-1/2 text-yellow-600 dark:text-yellow-400" title="Duplicate - will be skipped">⚠️</span>
+                                                        @endif
+                                                    </td>
+                                                    <td class="p-3 text-card-foreground">
+                                                        {{ $txn['description'] }}
+                                                        @if($isDuplicate)
+                                                            <span class="ml-2 text-xs text-yellow-600 dark:text-yellow-400">(Already exists)</span>
+                                                        @endif
+                                                    </td>
                                                     <td class="p-3 text-right font-semibold {{ $txn['amount'] > 0 ? 'text-destructive' : 'text-chart-2' }}">
                                                         ${{ number_format(abs($txn['amount']), 2) }}
                                                     </td>
@@ -233,12 +251,15 @@
                                                     <td class="p-3 text-center">
                                                         <button 
                                                             wire:click="removeTransaction({{ $index }})"
-                                                            class="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100"
+                                                            class="text-muted-foreground hover:text-destructive transition-colors opacity-0 group-hover:opacity-100 {{ $isDuplicate ? 'hidden' : '' }}"
                                                             title="Remove this transaction">
                                                             <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
                                                             </svg>
                                                         </button>
+                                                        @if($isDuplicate)
+                                                            <span class="text-xs text-yellow-600 dark:text-yellow-400">Skip</span>
+                                                        @endif
                                                     </td>
                                                 </tr>
                                             @endforeach

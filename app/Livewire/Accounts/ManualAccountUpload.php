@@ -35,6 +35,7 @@ class ManualAccountUpload extends Component
     // Parsed data
     public ?array $parsedAccount = null;
     public ?array $parsedTransactions = null;
+    public ?array $duplicateTransactionIndices = null;
     
     // User editable fields
     public string $institutionName = '';
@@ -173,6 +174,27 @@ class ManualAccountUpload extends Component
             $data = $result['data'];
             $this->parsedAccount = $data['account'];
             $this->parsedTransactions = $data['transactions'];
+            
+            // Check for duplicates if updating existing account
+            $this->duplicateTransactionIndices = [];
+            if ($this->existingAccountId && $this->parsedTransactions) {
+                $account = Account::find($this->existingAccountId);
+                foreach ($this->parsedTransactions as $index => $txn) {
+                    if (empty($txn['date']) || empty($txn['description']) || !isset($txn['amount'])) {
+                        continue;
+                    }
+                    
+                    $existingTransaction = Transaction::where('account_id', $account->id)
+                        ->where('transaction_date', $txn['date'])
+                        ->where('amount', (float) $txn['amount'])
+                        ->where('name', $txn['description'])
+                        ->first();
+                    
+                    if ($existingTransaction) {
+                        $this->duplicateTransactionIndices[] = $index;
+                    }
+                }
+            }
             
             // Pre-fill form fields (only if not updating existing account)
             if (!$this->existingAccountId) {
