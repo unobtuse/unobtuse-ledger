@@ -45,7 +45,7 @@ class AccountsList extends Component
     public ?string $interestRate = null;
     public ?string $interestRateType = null;
     public string $websiteUrl = '';
-    public float $initialLoanAmount = 0;
+    public string $initialLoanAmount = '';
     
     // Expanded accounts (for card details)
     public array $expandedAccounts = [];
@@ -450,7 +450,7 @@ class AccountsList extends Component
     {
         $account = Account::findOrFail($accountId);
         $this->selectedAccountId = $accountId;
-        $this->initialLoanAmount = $account->initial_loan_amount ?? 0;
+        $this->initialLoanAmount = $account->initial_loan_amount ? (string) $account->initial_loan_amount : '';
         $this->showInitialLoanAmountModal = true;
     }
 
@@ -479,7 +479,7 @@ class AccountsList extends Component
     {
         $this->showInitialLoanAmountModal = false;
         $this->selectedAccountId = null;
-        $this->initialLoanAmount = 0;
+        $this->initialLoanAmount = '';
     }
     
     /**
