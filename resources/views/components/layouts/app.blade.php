@@ -23,6 +23,9 @@
     <!-- Scripts -->
     @vite(['resources/css/app.css', 'resources/js/app.js'])
     @livewireStyles
+
+    <!-- Teller Connect SDK -->
+    <script src="https://connect.teller.io/connect.js"></script>
 </head>
 <body class="antialiased bg-background text-foreground font-sans">
     <div class="min-h-screen" x-data="{ sidebarOpen: false }">
