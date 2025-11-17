@@ -540,7 +540,12 @@ class AccountsList extends Component
         
         // Type filter
         if ($this->typeFilter !== 'all') {
-            $query->where('account_type', $this->typeFilter);
+            // For 'loan' filter, include all loan types
+            if ($this->typeFilter === 'loan') {
+                $query->whereIn('account_type', ['loan', 'auto_loan', 'mortgage', 'student_loan']);
+            } else {
+                $query->where('account_type', $this->typeFilter);
+            }
         }
         
         // Status filter
