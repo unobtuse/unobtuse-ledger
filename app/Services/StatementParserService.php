@@ -75,7 +75,7 @@ class StatementParserService
                         'temperature' => 0.1,
                         'topK' => 1,
                         'topP' => 1,
-                        'maxOutputTokens' => 8192, // Increased for large statements
+                        'maxOutputTokens' => 16384, // Max for large statements with many transactions
                     ]
                 ]);
                 
