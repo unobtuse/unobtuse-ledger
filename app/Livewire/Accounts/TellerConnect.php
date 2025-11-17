@@ -81,18 +81,19 @@ class TellerConnect extends Component
     /**
      * Handle successful Teller Connect enrollment
      * Called via JavaScript after user completes Teller Connect flow
-     *
-     * @param string $enrollmentToken
      */
     #[\Livewire\Attributes\On('tellerEnrollmentSuccess')]
-    public function handleEnrollmentSuccess($enrollmentToken): void
+    public function handleEnrollmentSuccess($data): void
     {
         try {
             $this->isLinking = true;
+            
+            // Extract enrollment token from event data
+            $enrollmentToken = is_array($data) ? ($data['enrollmentToken'] ?? $data[0] ?? null) : $data;
 
             Log::info('Teller enrollment received', [
                 'user_id' => $this->user->id,
-                'token' => substr($enrollmentToken, 0, 10),
+                'token' => substr((string)$enrollmentToken, 0, 10),
             ]);
 
             // Exchange enrollment token for access token
@@ -163,13 +164,14 @@ class TellerConnect extends Component
     /**
      * Handle Teller Connect errors
      * Called via JavaScript if user cancels or encounters error
-     *
-     * @param string $errorCode
-     * @param string $errorMessage
      */
     #[\Livewire\Attributes\On('tellerEnrollmentError')]
-    public function handleEnrollmentError($errorCode, $errorMessage): void
+    public function handleEnrollmentError($data): void
     {
+        // Extract error data from event
+        $errorCode = is_array($data) ? ($data['errorCode'] ?? 'unknown_error') : 'unknown_error';
+        $errorMessage = is_array($data) ? ($data['errorMessage'] ?? 'An error occurred') : 'An error occurred';
+        
         Log::warning('Teller enrollment error', [
             'error_code' => $errorCode,
             'error_message' => $errorMessage,
