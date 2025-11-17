@@ -45,6 +45,7 @@ class Account extends Model
         'account_subtype',
         'institution_id',
         'institution_name',
+        'institution_url',
         'balance',
         'available_balance',
         'credit_limit',
@@ -56,6 +57,8 @@ class Account extends Model
         'last_synced_at',
         'sync_error',
         'is_active',
+        'is_manual',
+        'statement_file_path',
         'metadata',
         'payment_due_date',
         'payment_due_date_source',
@@ -91,6 +94,7 @@ class Account extends Model
             'credit_limit' => 'decimal:2',
             'last_synced_at' => 'datetime',
             'is_active' => 'boolean',
+            'is_manual' => 'boolean',
             'metadata' => 'array',
             'plaid_access_token' => 'encrypted',
             'payment_due_date' => 'date',
@@ -106,6 +110,14 @@ class Account extends Model
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class);
+    }
+
+    /**
+     * Get the institution for the account.
+     */
+    public function institution(): BelongsTo
+    {
+        return $this->belongsTo(Institution::class, 'institution_id', 'id');
     }
 
     /**
