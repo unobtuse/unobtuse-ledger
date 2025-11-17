@@ -317,6 +317,38 @@
             </div>
         </div>
     @endif
+
+    <!-- Edit Website URL Modal -->
+    @if($showWebsiteUrlModal && $selectedAccount)
+        <div class="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50" x-show="$wire.showWebsiteUrlModal" x-transition>
+            <div class="bg-card border border-border rounded-[var(--radius-large)] shadow-elevated p-6 w-full max-w-md" @click.away="$wire.closeWebsiteUrlModal()">
+                <h3 class="text-lg font-semibold text-card-foreground mb-4">Edit Institution Website URL</h3>
+                <div class="space-y-4">
+                    <div>
+                        <label class="block text-sm font-medium text-card-foreground mb-2">Website URL</label>
+                        <input type="url" 
+                               wire:model="websiteUrl" 
+                               placeholder="https://www.example.com"
+                               class="w-full px-4 py-2 bg-background border border-input rounded-[var(--radius-sm)] text-foreground placeholder:text-muted-foreground focus:outline-none focus:ring-2 focus:ring-ring transition-all duration-150">
+                        <p class="mt-1 text-xs text-muted-foreground">Enter the institution's website URL (e.g., https://www.chase.com)</p>
+                        @error('websiteUrl')
+                            <p class="mt-1 text-xs text-destructive">{{ $message }}</p>
+                        @enderror
+                    </div>
+                    <div class="flex items-center justify-end gap-3">
+                        <button wire:click="closeWebsiteUrlModal" 
+                                class="px-4 py-2 text-sm font-medium text-muted-foreground hover:text-card-foreground transition-colors">
+                            Cancel
+                        </button>
+                        <button wire:click="saveWebsiteUrl" 
+                                class="px-4 py-2 bg-primary text-primary-foreground rounded-[var(--radius-md)] font-semibold text-sm hover:opacity-90 transition-all duration-150">
+                            Save
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    @endif
 </div>
 
 <!-- Teller Connect Script -->
