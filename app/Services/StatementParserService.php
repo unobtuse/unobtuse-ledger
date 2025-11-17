@@ -162,9 +162,10 @@ class StatementParserService
         return <<<PROMPT
 Analyze this bank statement image and extract the following information in JSON format.
 
-STATEMENT YEAR CONTEXT: This statement/screenshot is from the year {$year}.
-All transaction dates should use the year {$year}.
-If month is visible but year is not shown, use {$year}.
+IMPORTANT DATE CONTEXT: The user selected year {$year}.
+HOWEVER: If the document EXPLICITLY shows full years (e.g., '2022', '2023', '2024', '2025'), USE THE ACTUAL YEARS FROM THE DOCUMENT.
+Only assume year {$year} for dates that don't include the year (e.g., 'Oct 15' or '10/15' without year).
+For payment histories or documents spanning multiple years with explicit years shown, preserve those actual years.
 
 {
   "account": {
