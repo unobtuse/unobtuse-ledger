@@ -248,7 +248,12 @@ class ManualAccountUpload extends Component
             
             DB::commit();
             
-            session()->flash('success', "Manual account '{$this->accountName}' created with {$transactionCount} transactions!");
+            $message = "Manual account '{$this->accountName}' created with {$transactionCount} transactions!";
+            if ($duplicateCount > 0) {
+                $message .= " ({$duplicateCount} duplicates skipped)";
+            }
+            
+            session()->flash('success', $message);
             
             $this->closePreviewModal();
             $this->dispatch('account-created');
